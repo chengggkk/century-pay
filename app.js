@@ -121,6 +121,58 @@ app.post('/interactions', async (req, res) => {
         });
       }
     }
+
+    if (name === 'pay') {
+      const amount = options?.find(option => option.name === 'amount')?.value;
+      const toAddress = options?.find(option => option.name === 'to_address')?.value;
+
+      if (!amount || !toAddress) {
+        return res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content: 'Please provide both amount and recipient address.',
+          },
+        });
+      }
+
+      const userId = member?.user?.id || user?.id;
+      const account = userSessions.get(userId);
+
+      if (!account) {
+        return res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content: 'You need to log in first.',
+          },
+        });
+      }
+
+      try {
+        const tx = {
+          from: account.address,
+          to: toAddress,
+          value: web3.utils.toWei(amount, 'ether'),
+          gas: 2000000,
+        };
+
+        const signedTx = await web3.eth.accounts.signTransaction(tx, account.privateKey);
+        await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+
+        return res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content: `Payment of ${amount} ETH sent to ${toAddress}`,
+          },
+        });
+      } catch (error) {
+        return res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content: `Error sending payment: ${error.message}`,
+          },
+        });
+      }
+    }
   }
 
   if (type === InteractionType.MESSAGE_COMPONENT) {
@@ -147,16 +199,6 @@ app.post('/interactions', async (req, res) => {
     }
 
     if (custom_id === 'pay_button') {
-      const userId = member?.user?.id || user?.id;
-      if (!userId || !userSessions.has(userId)) {
-        return res.send({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: {
-            content: 'You need to log in first.',
-          },
-        });
-      }
-
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
