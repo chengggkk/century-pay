@@ -4,13 +4,11 @@
   "description": "Discord example app",
   "main": "app.js",
   "type": "module",
-  "engines": {
-    "node": "16.x"
-  },
   "scripts": {
     "start": "node app.js",
     "register": "node commands.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "build": "npm run register"
   },
   "author": "Shay DeWael",
   "license": "MIT",
