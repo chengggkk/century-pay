@@ -12,21 +12,12 @@ import Web3 from "web3";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const web3 = new Web3("https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID"); // Replace with your Infura project ID
+const web3 = new Web3(process.env.INFURA_URL); // Replace with your Infura project ID
 
 // Use a Map to store user sessions
 const userSessions = new Map();
 
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
-
-app.post("/create-wallet", async (req, res) => {
-    try {
-        const account = web3.eth.accounts.create();
-        res.status(200).json({ address: account.address });
-    } catch (error) {
-        res.status(500).json({ error: "Error creating wallet" });
-    }
-});
 
 app.get("/", (req, res) => res.send("Express on Vercel"));
 
@@ -136,15 +127,11 @@ app.post("/interactions", async (req, res) => {
 
         if (custom_id === "create_wallet") {
             try {
-                const response = await fetch(
-                    "http://localhost:3000/create-wallet",
-                    { method: "POST" }
-                );
-                const walletData = await response.json();
+                const account = web3.eth.accounts.create();
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                     data: {
-                        content: `Wallet created: ${walletData.address}`,
+                        content: `Wallet created: ${account.address}`,
                     },
                 });
             } catch (error) {
