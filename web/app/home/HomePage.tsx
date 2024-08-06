@@ -2,7 +2,14 @@
 import { useAccount } from 'wagmi';
 import Footer from '@/components/layout/footer/Footer';
 import Header from '@/components/layout/header/Header';
+import { WalletOptions } from '@/components/layout/header/WalletOptions';
+import { Account } from '@/components/layout/header/Account';
 
+function ConnectWallet() {
+  const { isConnected } = useAccount();
+  if (isConnected) return <Account />;
+  return <WalletOptions />;
+}
 /**
  * Use the page component to wrap the components
  * that you want to render on the page.
@@ -18,6 +25,7 @@ export default function HomePage() {
           <h2 className="text-xl">Developer information</h2>
           <br />
           <h3 className="text-lg">Account</h3>
+          <ConnectWallet />
           <ul>
             <li>
               <b>status</b>: {account.status}
