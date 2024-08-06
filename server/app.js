@@ -9,12 +9,27 @@ import {
 } from "discord-interactions";
 import { VerifyDiscordRequest, getRandomEmoji } from "./utils.js";
 import Web3 from "web3";
+import mongoose from "mongoose";
+import subscribersRouter from './routes/subscribers.js';
 
-const app = express();
+const app = express(); // 初始化 Express 應用
 const PORT = process.env.PORT || 3000;
-const web3 = new Web3(process.env.INFURA_URL); // Replace with your Infura project ID
+const web3 = new Web3(process.env.INFURA_URL); // 使用你的 Infura URL
 
-// Use a Map to store user sessions
+app.use(express.json());
+
+console.log("Database URL:", process.env.DATABASE_URL); // 應該輸出你的 MongoDB URL
+
+mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true });
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "connection error:"));
+db.once("open", function () {
+    console.log("Connected to MongoDB");
+});
+
+app.use('/subscribers', subscribersRouter);
+
+// 使用 Map 存儲用戶會話
 const userSessions = new Map();
 
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
@@ -80,10 +95,9 @@ app.post("/interactions", async (req, res) => {
             }
 
             try {
-                const account =
-                    web3.eth.accounts.privateKeyToAccount(privateKey);
+                const account = web3.eth.accounts.privateKeyToAccount(privateKey);
                 if (userId) {
-                    userSessions.set(userId, account); // Store user session
+                    userSessions.set(userId, account); // 存儲用戶會話
                     return res.send({
                         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                         data: {
@@ -158,8 +172,7 @@ app.post("/interactions", async (req, res) => {
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
-                    content:
-                        "Please provide the amount and recipient address using the /pay command.",
+                    content: "Please provide the amount and recipient address using the /pay command.",
                 },
             });
         }
