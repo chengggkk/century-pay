@@ -1,19 +1,10 @@
-# Build Onchain Apps Template
+# Century Pay
 
-This project has two main folders:
+Century Pay is a discord bot to make onchain payment easy.
 
-```bash
-.
-├── contracts
-│   ├── src
-│   ├── broadcast
-│   ├── script
-│   └── test
-└── web
-    ├── app
-    └── src
-```
-
-[contracts](/contracts/README.md) folder contains all the solidity code
-
-[web](/web/README.md) folder contains all the frontend code
+## Project Structure
+<!-- TODO:- [contracts](/contracts/README.md) folder contains all the solidity code -->
+- [server](/server/README.md) folder contains all the server code
+    - The server will handle all the requests from discord chat and return responses.
+- [web](/web/README.md) folder contains all the frontend code
+    - The web will let users connect their wallets and sign messages.
