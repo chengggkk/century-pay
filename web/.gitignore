@@ -2,6 +2,9 @@
 
 # dependencies
 /node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
 
 # testing
 /coverage
@@ -13,12 +16,6 @@
 # production
 /build
 
-# PWA files
-sw.js
-sw.js.map
-workbox***.js
-workbox***.js.map
-
 # misc
 .DS_Store
 *.pem
@@ -29,9 +26,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env
-.env.local
-.env.prod
+.env*.local
 
 # vercel
 .vercel
@@ -39,11 +34,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# Yarn
-.yarn/*
-!.yarn/patches
-!.yarn/releases
-!.yarn/plugins
-!.yarn/sdks
-!.yarn/versions

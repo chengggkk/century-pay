@@ -1,20 +1,19 @@
-import { generateMetadata } from '@/utils/generateMetadata';
-import HomePage from './home/HomePage';
+// pages/index.js
+import Head from 'next/head';
+import ConnectBtn from '../components/ConnectBtn';
 
-export const metadata = generateMetadata({
-  title: 'Build Onchain Apps Template',
-  description:
-    'Save weeks of initial app setup and the hassle of integrating onchain components with web2 infrastructure.',
-  images: 'themes.png',
-  pathname: '',
-});
+export default function Home() {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <Head>
+        <title>Center Button</title>
+        <meta name="description" content="A centered button with Next.js and Tailwind CSS" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
 
-/**
- * Server component, which imports the Home component (client component that has 'use client' in it)
- * https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts
- * https://nextjs.org/docs/pages/building-your-application/upgrading/app-router-migration#step-4-migrating-pages
- * https://nextjs.org/docs/app/building-your-application/rendering/client-components
- */
-export default function Page() {
-  return <HomePage />;
+      <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
+        <ConnectBtn/>
+      </main>
+    </div>
+  );
 }
