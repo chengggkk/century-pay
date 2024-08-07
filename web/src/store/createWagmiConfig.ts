@@ -1,12 +1,12 @@
 import { createConfig, http } from 'wagmi';
 import { base, baseSepolia } from 'wagmi/chains';
 import { coinbaseWallet, metaMask, walletConnect } from 'wagmi/connectors';
+import { authConnector } from '@web3modal/wagmi'
 
-export function createWagmiConfig(rpcUrl: string, projectId?: string) {
-  // Keep this till we fully deprecated RK inside the template
-  if (projectId) {
-    console.log('projectId:', projectId);
-  }
+
+export function createWagmiConfig(rpcUrl: string) {
+
+  const projectId = "5a1867c947abfa58cd91a9befc9dd02a"
 
   // Temporary hack, until we configure a FE page in OnchainKit to copy just the API key
   const baseUrl = rpcUrl.replace(/\/v1\/(.+?)\//, '/v1/base/');
@@ -21,6 +21,14 @@ export function createWagmiConfig(rpcUrl: string, projectId?: string) {
         appName: 'buildonchainapps',
         preference: 'smartWalletOnly',
       }),
+      authConnector({
+        chains: [baseSepolia],
+        options: { projectId },
+        email: true, // default to true
+        socials: ['google', 'x', 'github', 'discord', 'apple', 'facebook', 'farcaster'],
+        showWallets: true, // default to true
+        walletFeatures: true // default to true
+      })
     ],
     ssr: true,
     transports: {

@@ -26,6 +26,12 @@ const CREATE_WALLET_COMMAND = {
   type: 1,
 };
 
+const IMAGE_COMMAND = {
+  name: 'image',
+  description: 'Send image',
+  type: 1,
+};
+
 const LOGIN_COMMAND = {
   name: 'login',
   description: 'Login with a private key',
@@ -61,7 +67,7 @@ const PAY_COMMAND = {
 };
 
 // Update command list
-const ALL_COMMANDS = [TEST_COMMAND, CREATE_WALLET_COMMAND, LOGIN_COMMAND, PAY_COMMAND];
+const ALL_COMMANDS = [TEST_COMMAND, CREATE_WALLET_COMMAND, LOGIN_COMMAND, PAY_COMMAND, IMAGE_COMMAND];
 
 // Install commands
 InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);

@@ -44,6 +44,22 @@ app.post("/interactions", async (req, res) => {
             });
         }
 
+        if (name === "image") {
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: "hello world " + getRandomEmoji(),
+                    embeds: [
+                        {
+                            image: {
+                                url: "https://i.imgur.com/9xh8zAA.jpeg"
+                            }
+                        }
+                    ],
+                },
+            });
+        }
+
         if (name === "create_wallet") {
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
