@@ -11,6 +11,9 @@ import { VerifyDiscordRequest, getRandomEmoji } from "./utils.js";
 import Web3 from "web3";
 import mongoose from "mongoose";
 import subscribersRouter from './routes/subscribers.js';
+import userlink from "./models/userlink.js";
+import userlinksRouter from './routes/userlinks.js';
+
 
 const app = express(); // 初始化 Express 應用
 const PORT = process.env.PORT || 3000;
@@ -28,6 +31,7 @@ db.once("open", function () {
 });
 
 app.use('/subscribers', subscribersRouter);
+app.use('/userlinks', userlinksRouter); 
 
 // 使用 Map 存儲用戶會話
 const userSessions = new Map();
