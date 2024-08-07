@@ -2,30 +2,25 @@ import 'dotenv/config';
 import fetch from 'node-fetch';
 import { verifyKey } from 'discord-interactions';
 
-/**
- * Middleware to verify Discord request signature.
- * @param {string} clientKey - The public key from Discord Developer Portal.
- */
 export function VerifyDiscordRequest(clientKey) {
   return function (req, res, buf, encoding) {
     const signature = req.get('X-Signature-Ed25519');
     const timestamp = req.get('X-Signature-Timestamp');
 
+    if (!signature || !timestamp) {
+      res.status(400).send('Missing required headers');
+      return;
+    }
+
     const isValidRequest = verifyKey(buf, signature, timestamp, clientKey);
     if (!isValidRequest) {
-      res.status(401).send('Bad request signature');
-      throw new Error('Bad request signature');
+      res.status(401).send('Invalid request signature');
+      throw new Error('Invalid request signature');
     }
   };
 }
-
-/**
- * Helper function to make requests to the Discord API.
- * @param {string} endpoint - The API endpoint to call.
- * @param {object} options - The options for the fetch request.
- */
 export async function DiscordRequest(endpoint, options) {
-  // Append endpoint to root API URL
+  // append endpoint to root API URL
   const url = 'https://discord.com/api/v10/' + endpoint;
   // Stringify payloads
   if (options.body) options.body = JSON.stringify(options.body);
@@ -38,21 +33,16 @@ export async function DiscordRequest(endpoint, options) {
     },
     ...options
   });
-  // Throw API errors
+  // throw API errors
   if (!res.ok) {
     const data = await res.json();
     console.log(res.status);
     throw new Error(JSON.stringify(data));
   }
-  // Return original response
+  // return original response
   return res;
 }
 
-/**
- * Install global commands to the Discord application.
- * @param {string} appId - The application ID from Discord Developer Portal.
- * @param {array} commands - The commands to install.
- */
 export async function InstallGlobalCommands(appId, commands) {
   // API endpoint to overwrite global commands
   const endpoint = `applications/${appId}/commands`;
@@ -65,20 +55,12 @@ export async function InstallGlobalCommands(appId, commands) {
   }
 }
 
-/**
- * Simple method that returns a random emoji from the list.
- * @return {string} A random emoji.
- */
+// Simple method that returns a random emoji from list
 export function getRandomEmoji() {
   const emojiList = ['😭','😄','😌','🤓','😎','😤','🤖','😶‍🌫️','🌏','📸','💿','👋','🌊','✨'];
   return emojiList[Math.floor(Math.random() * emojiList.length)];
 }
 
-/**
- * Capitalize the first letter of a string.
- * @param {string} str - The string to capitalize.
- * @return {string} The capitalized string.
- */
 export function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }

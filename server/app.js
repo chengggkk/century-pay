@@ -1,34 +1,32 @@
 import 'dotenv/config';
 import express from 'express';
 import fetch from 'node-fetch';
-import { InteractionType, InteractionResponseType } from 'discord-interactions';
-import { VerifyDiscordRequest, getRandomEmoji } from './utils.js';
 import Web3 from 'web3';
 import mongoose from 'mongoose';
+import { InteractionType, InteractionResponseType } from 'discord-interactions';
+import { VerifyDiscordRequest, getRandomEmoji } from './utils.js';
 import subscribersRouter from './routes/subscribers.js';
 import userlink from './models/userlink.js';
 import userlinksRouter from './routes/userlinks.js';
 
-const app = express(); // 初始化 Express 应用
+const app = express(); // Initialize Express app
 const PORT = process.env.PORT || 3000;
-const web3 = new Web3(process.env.INFURA_URL); // 使用你的 Infura URL
+const web3 = new Web3(process.env.INFURA_URL); // Use your Infura URL
 
 app.use(express.json());
 
-console.log('Database URL:', process.env.DATABASE_URL); // 应该输出你的 MongoDB URL
+console.log('Database URL:', process.env.DATABASE_URL); // Should output your MongoDB URL
 
-mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true });
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function () {
-  console.log('Connected to MongoDB');
-});
+mongoose.connect(process.env.DATABASE_URL)
+  .then(() => {
+    console.log('Connected to MongoDB');
+  })
+  .catch(err => {
+    console.error('Failed to connect to MongoDB', err);
+  });
 
 app.use('/subscribers', subscribersRouter);
-app.use('/userlinks', userlinksRouter); 
-
-// 使用 Map 存储用户会话
-const userSessions = new Map();
+app.use('/userlinks', userlinksRouter);
 
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 
@@ -45,47 +43,69 @@ app.post('/interactions', async (req, res) => {
   }
 
   if (type === InteractionType.APPLICATION_COMMAND) {
-    const { name } = data;
+    const { name, options } = data;
     const userId = member?.user?.id || user?.id;
 
-    if (name === 'test') {
-      return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          content: 'hello world ' + getRandomEmoji(),
-        },
-      });
-    }
+    if (name === 'send') {
+      const amount = options.find(option => option.name === 'amount')?.value;
+      const recipient = options.find(option => option.name === 'to_address')?.value;
 
-    if (name === 'connect') {
-      const userId = member.user.id;
-
-      let sessionId;
-      let isUnique = false;
-
-      // 循环生成唯一的 sessionId
-      while (!isUnique) {
-        sessionId = Math.random().toString(36).substring(2, 15);
-        const existingLink = await userlink.findOne({ autolink: sessionId });
-        if (!existingLink) {
-          isUnique = true;
-        }
+      if (!amount || !recipient) {
+        return res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content: 'Please specify both amount and recipient.',
+          }
+        });
       }
 
-      const timestamp = new Date();
-
-      const newUserLink = new userlink({
-        user: userId,
-        autolink: sessionId,
-        generateTIME: timestamp,
-      });
-
       try {
-        await newUserLink.save();
+        const senderAddress = process.env.SENDER_ADDRESS;
+        const privateKey = process.env.PRIVATE_KEY;
+
+        let recipientAddress;
+
+        if (web3.utils.isAddress(recipient)) {
+          recipientAddress = recipient;
+        } else {
+          recipientAddress = await getAddressFromUserId(recipient); // Resolve user ID to wallet address
+        }
+
+        if (!web3.utils.isAddress(recipientAddress)) {
+          return res.send({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+              content: 'Invalid recipient address.',
+            }
+          });
+        }
+
+        const senderBalance = await web3.eth.getBalance(senderAddress);
+
+        if (web3.utils.toWei(amount, 'ether') > senderBalance) {
+          return res.send({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+              content: 'Insufficient funds.',
+            }
+          });
+        }
+
+        const tx = {
+          from: senderAddress,
+          to: recipientAddress,
+          value: web3.utils.toWei(amount, 'ether'),
+          gas: 21000,
+          gasPrice: web3.utils.toWei('10', 'gwei')
+        };
+
+        const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+        const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+
         res.send({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
-            content: `User ID: ${userId}\nSession ID: ${sessionId}\nTimestamp: ${timestamp}\nConnect your wallet here: https://connect-wallet/${sessionId}`
+            content: `Successfully sent ${amount} ETH to ${recipientAddress}. Transaction hash: ${receipt.transactionHash}`,
           }
         });
       } catch (error) {
@@ -93,13 +113,19 @@ app.post('/interactions', async (req, res) => {
         res.send({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
-            content: 'Failed to save user link.'
+            content: 'Failed to send transaction.',
           }
         });
       }
     }
   }
 });
+
+async function getAddressFromUserId(userId) {
+  // Implement logic to resolve user ID to wallet address
+  const userLink = await userlink.findOne({ user: userId });
+  return userLink ? userLink.autolink : null; // Return wallet address if found
+}
 
 app.listen(PORT, () => {
   console.log('Listening on port', PORT);

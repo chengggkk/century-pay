@@ -1,11 +1,8 @@
 import 'dotenv/config';
-import { capitalize, InstallGlobalCommands } from './utils.js';
+import { InstallGlobalCommands } from './utils.js'; // Import function for installing commands
 
-// Assuming getRPSChoices is defined elsewhere
-// import { getRPSChoices } from './game.js';
-
+// Function to create command choices (if needed)
 function createCommandChoices() {
-  // Replace this with your actual choices
   return [
     { name: 'Rock', value: 'rock' },
     { name: 'Paper', value: 'paper' },
@@ -17,32 +14,19 @@ function createCommandChoices() {
 const TEST_COMMAND = {
   name: 'test',
   description: 'Basic command',
-  type: 1,
+  type: 1, // CHAT_INPUT
 };
 
-const CREATE_WALLET_COMMAND = {
+const CONNECT_COMMAND = {
   name: 'create_wallet',
   description: 'Create a new wallet',
-  type: 1,
+  type: 1, // CHAT_INPUT
 };
 
-const LOGIN_COMMAND = {
-  name: 'login',
-  description: 'Login with a private key',
-  options: [
-    {
-      type: 3, // STRING
-      name: 'private_key',
-      description: 'Your private key',
-      required: true,
-    },
-  ],
-  type: 1,
-};
-
-const PAY_COMMAND = {
+const SEND_COMMAND = {
   name: 'pay',
   description: 'Pay a specified amount',
+  type: 1, // CHAT_INPUT
   options: [
     {
       type: 3, // STRING
@@ -57,11 +41,10 @@ const PAY_COMMAND = {
       required: true,
     },
   ],
-  type: 1,
 };
 
 // Update command list
-const ALL_COMMANDS = [TEST_COMMAND, CREATE_WALLET_COMMAND, LOGIN_COMMAND, PAY_COMMAND];
+const ALL_COMMANDS = [TEST_COMMAND, CONNECT_COMMAND, SEND_COMMAND];
 
 // Install commands
 InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);
