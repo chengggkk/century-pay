@@ -8,6 +8,8 @@ import subscribersRouter from './routes/subscribers.js';
 import userlink from './models/userlink.js';
 import userlinksRouter from './routes/userlinks.js';
 import sendlink from './models/sendlink.js';
+import {ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -74,28 +76,40 @@ app.post('/interactions', async (req, res) => {
     }
     
     
-
     if (name === 'connect') {
-      const sessionId = Math.random().toString(36).substring(2, 15);
-      const timestamp = new Date();
-      const newUserLink = new userlink({ user: userId, autolink: sessionId, generateTIME: timestamp });
-
-      try {
-        await newUserLink.save();
-        res.send({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: {
-            content: `Connect your wallet here: https://century-pay-web.vercel.app/connect/${sessionId}`
-          }
-        });
-      } catch (error) {
-        console.error(error);
-        res.send({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: { content: 'Failed to save user link.' }
-        });
+        const sessionId = Math.random().toString(36).substring(2, 15);
+        const timestamp = new Date();
+        const newUserLink = new userlink({ user: userId, autolink: sessionId, generateTIME: timestamp });
+      
+        try {
+          await newUserLink.save();
+      
+          const response = {
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+              content: 'Connect your wallet:',
+              components: [
+                new ActionRowBuilder()
+                  .addComponents(
+                    new ButtonBuilder()
+                      .setLabel('Connect 🔁')
+                      .setStyle(ButtonStyle.Link)
+                      .setURL(`https://century-pay-web.vercel.app/connect/${sessionId}`)
+                  )
+              ]
+            }
+          };
+      
+          res.send(response);
+      
+        } catch (error) {
+          console.error(error);
+          res.send({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: { content: 'Failed to save user link.' }
+          });
+        }
       }
-    }
 
     if (name === 'send') {
         const amount = options.find(option => option.name === 'amount')?.value;
@@ -118,9 +132,7 @@ app.post('/interactions', async (req, res) => {
                     data: { content: 'User has not connected a wallet.' }
                 });
             }
-    
-            const senderAddress = userLink.address; // Use the connected address
-    
+        
             const sessionId = Math.random().toString(36).substring(2, 15);
             const timestamp = new Date();
     
@@ -128,19 +140,29 @@ app.post('/interactions', async (req, res) => {
                 user: userId,
                 sendautolink: sessionId,
                 generateTIME: timestamp,
-                address: senderAddress,  // Add sender's address here
                 amount: amount,
                 to_address: to_address
             });
     
             await newSendLink.save();  // Save the new send link to the database
     
-            res.send({
+            const response = {
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
-                    content: `User ID: ${userId}\nSession ID: ${sessionId}\nTimestamp: ${timestamp}\nAmount: ${amount}\nTo Address: ${to_address}\nConnect your wallet here: https://century-pay-web.vercel.app/send/${sessionId}`
+                  content: '',
+                  components: [
+                    new ActionRowBuilder()
+                      .addComponents(
+                        new ButtonBuilder()
+                          .setLabel('send 💸')
+                          .setStyle(ButtonStyle.Link)
+                          .setURL(`https://century-pay-web.vercel.app/send/${sessionId}`)
+                      )
+                  ]
                 }
-            });
+              };
+          
+              res.send(response);
         } catch (error) {
             console.error(error);
             res.send({
