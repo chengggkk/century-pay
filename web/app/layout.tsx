@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 import { cookieToInitialState } from "wagmi";
 
-import { config } from "../config";
+import { config } from "../config/index";
 import Web3ModalProvider from "../context";
 import { headers } from "next/headers";
 

@@ -15,6 +15,8 @@ import {
 // Your WalletConnect Cloud project ID
 export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 
+if (!projectId) throw new Error("Project ID is not defined");
+
 // Create a metadata object
 const metadata = {
     name: "Century Pay",
