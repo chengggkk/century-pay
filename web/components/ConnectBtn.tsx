@@ -55,8 +55,8 @@ export default function ConnectBtn({ params }: { params: { slug: string } }) {
         const data = await signMessageAsync({ message });
         console.log(data);
 
-        const result = await verifyMessage(signConfig, {
-            address: address,
+        const result = await verifyMessage(signConfig as any, {
+            address: address as `0x${string}`,
             message: message,
             signature: data,
         });
