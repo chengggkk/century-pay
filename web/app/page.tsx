@@ -1,6 +1,6 @@
+"use client";
 // pages/index.js
 import Head from "next/head";
-import ConnectBtn from "../components/ConnectBtn";
 
 export default function Home() {
     return (
