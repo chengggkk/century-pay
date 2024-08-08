@@ -1,173 +1,139 @@
-import "dotenv/config";
-import express from "express";
-import fetch from "node-fetch";
-import {
-    InteractionType,
-    InteractionResponseType,
-    MessageComponentTypes,
-    ButtonStyleTypes,
-} from "discord-interactions";
-import { VerifyDiscordRequest, getRandomEmoji } from "./utils.js";
-import Web3 from "web3";
+import 'dotenv/config';
+import express from 'express';
+import Web3 from 'web3';
+import mongoose from 'mongoose';
+import { InteractionType, InteractionResponseType } from 'discord-interactions';
+import { VerifyDiscordRequest, getRandomEmoji } from './utils.js';
+import subscribersRouter from './routes/subscribers.js';
+import userlink from './models/userlink.js';
+import userlinksRouter from './routes/userlinks.js';
+import sendlink from './models/sendlink.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const web3 = new Web3(process.env.INFURA_URL); // Replace with your Infura project ID
-
-// Use a Map to store user sessions
-const userSessions = new Map();
+const web3 = new Web3(process.env.INFURA_URL);
 
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 
-app.get("/", (req, res) => res.send("Express on Vercel"));
+mongoose.connect(process.env.DATABASE_URL)
+  .then(() => {
+    console.log('Connected to MongoDB');
+  })
+  .catch(err => {
+    console.error('Failed to connect to MongoDB', err);
+  });
 
-/**
- * Interactions endpoint URL where Discord will send HTTP requests
- */
-app.post("/interactions", async (req, res) => {
-    const { type, data, member, user } = req.body;
+app.use('/subscribers', subscribersRouter);
+app.use('/userlinks', userlinksRouter);
 
-    if (type === InteractionType.PING) {
-        return res.send({ type: InteractionResponseType.PONG });
+app.get('/', (req, res) => res.send('Express on Vercel'));
+
+
+
+
+app.post('/interactions', async (req, res) => {
+  const { type, data, member, user } = req.body;
+
+  if (type === InteractionType.PING) {
+    return res.send({ type: InteractionResponseType.PONG });
+  }
+
+  if (type === InteractionType.APPLICATION_COMMAND) {
+    const { name, options } = data;
+    const userId = member?.user?.id || user?.id;
+
+    if (name === 'test') {
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: 'hello world ' + getRandomEmoji() },
+      });
     }
 
-    if (type === InteractionType.APPLICATION_COMMAND) {
-        const { name, options } = data;
-        const userId = member?.user?.id || user?.id;
+    if (name === 'connect') {
+      const sessionId = Math.random().toString(36).substring(2, 15);
+      const timestamp = new Date();
+      const newUserLink = new userlink({ user: userId, autolink: sessionId, generateTIME: timestamp });
 
-        if (name === "test") {
+      try {
+        await newUserLink.save();
+        res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content: `Connect your wallet here: https://https://century-pay-web.vercel.app/connect/${sessionId}`
+          }
+        });
+      } catch (error) {
+        console.error(error);
+        res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: { content: 'Failed to save user link.' }
+        });
+      }
+    }
+
+    if (name === 'send') {
+        const amount = options.find(option => option.name === 'amount')?.value;
+        const to_address = options.find(option => option.name === 'to_address')?.value;
+    
+        if (!amount || !to_address) {
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: {
-                    content: "hello world " + getRandomEmoji(),
-                },
+                data: { content: 'Please specify both amount and recipient.' }
             });
         }
-
-        if (name === "create_wallet") {
-            return res.send({
-                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: {
-                    content: "Click the button to create a wallet.",
-                    components: [
-                        {
-                            type: MessageComponentTypes.ACTION_ROW,
-                            components: [
-                                {
-                                    type: MessageComponentTypes.BUTTON,
-                                    custom_id: "create_wallet",
-                                    label: "Create Wallet",
-                                    style: ButtonStyleTypes.PRIMARY,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            });
-        }
-
-        if (name === "login") {
-            const privateKey = options?.find(
-                (option) => option.name === "private_key"
-            )?.value;
-            if (!privateKey) {
+    
+        try {
+            // Fetch the latest connected address for the user
+            const userLink = await userlink.findOne({ user: userId }).sort({ generateTIME: -1 });
+            
+            if (!userLink) {
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: {
-                        content: "Please provide a private key.",
-                    },
+                    data: { content: 'User has not connected a wallet.' }
                 });
             }
-
-            try {
-                const account =
-                    web3.eth.accounts.privateKeyToAccount(privateKey);
-                if (userId) {
-                    userSessions.set(userId, account); // Store user session
-                    return res.send({
-                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: {
-                            content: `Logged in as ${account.address}`,
-                            components: [
-                                {
-                                    type: MessageComponentTypes.ACTION_ROW,
-                                    components: [
-                                        {
-                                            type: MessageComponentTypes.BUTTON,
-                                            custom_id: "pay_button",
-                                            label: "Pay",
-                                            style: ButtonStyleTypes.PRIMARY,
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
-                    });
-                } else {
-                    return res.send({
-                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: {
-                            content: "User ID not found.",
-                        },
-                    });
+    
+            const senderAddress = userLink.address; // Use the connected address
+    
+            const sessionId = Math.random().toString(36).substring(2, 15);
+            const timestamp = new Date();
+    
+            const newSendLink = new sendlink({
+                user: userId,
+                sendautolink: sessionId,
+                generateTIME: timestamp,
+                address: senderAddress,  // Add sender's address here
+                amount: amount,
+                to_address: to_address
+            });
+    
+            await newSendLink.save();  // Save the new send link to the database
+    
+            res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `User ID: ${userId}\nSession ID: ${sessionId}\nTimestamp: ${timestamp}\nAmount: ${amount}\nTo Address: ${to_address}\nConnect your wallet here: https://century-pay-web.vercel.app/send/${sessionId}`
                 }
-            } catch (error) {
-                return res.send({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: {
-                        content: `Error logging in: ${error.message}`,
-                    },
-                });
-            }
-        }
-    }
-
-    if (type === InteractionType.MESSAGE_COMPONENT) {
-        const { custom_id } = data;
-
-        if (custom_id === "create_wallet") {
-            try {
-                const account = web3.eth.accounts.create();
-                return res.send({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: {
-                        content: `Wallet created: ${account.address}`,
-                    },
-                });
-            } catch (error) {
-                return res.send({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: {
-                        content: `Error creating wallet: ${error.message}`,
-                    },
-                });
-            }
-        }
-
-        if (custom_id === "pay_button") {
-            const userId = member?.user?.id || user?.id;
-            if (!userId || !userSessions.has(userId)) {
-                return res.send({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: {
-                        content: "You need to log in first.",
-                    },
-                });
-            }
-
-            return res.send({
+            });
+        } catch (error) {
+            console.error(error);
+            res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: {
-                    content:
-                        "Please provide the amount and recipient address using the /pay command.",
-                },
+                data: { content: 'Failed to save send link.' }
             });
         }
     }
+    
+  }
 });
 
+async function getAddressFromUserId(userId) {
+  const userLink = await userlink.findOne({ user: userId });
+  return userLink ? userLink.autolink : null;
+}
+
 app.listen(PORT, () => {
-    console.log("Listening on port", PORT);
+  console.log('Listening on port', PORT);
 });
 
 export default app;
