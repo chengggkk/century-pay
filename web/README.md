@@ -1,93 +1,36 @@
-# Build Onchain Apps Template experiences
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
 
-#### Step 1: Setup Environment Variables
-
-- Obtain a Base RPC URL from [Coinbase Developer Platform](https://www.coinbase.com/developer-platform/products/base-node?utm_source=boat) and assign to the `.env.local` file
+First, run the development server:
 
 ```bash
-NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=ADD_WALLET_CONNECT_PROJECT_ID_HERE
-NEXT_PRIVATE_RPC_URL=ADD_RPC_URL_HERE
-```
-
-#### Step 2: Install and Run your onchain app
-
-```bash
-# Install
-yarn
-
-# Run
+npm run dev
+# or
 yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## Develop
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-To format and lint the package locally use these quick steps.
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-```bash
-# Format fix
-yarn format
+This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
-# Lint fix
-yarn lint
-```
+## Learn More
 
-## Updating ABI
+To learn more about Next.js, take a look at the following resources:
 
-After you create a project using BOAT, these are the folders and files you are interested in when updating a smart contract:
-_Using BuyMeACoffee smart contract as an example below_
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-```bash
-<project-name>
-├── contracts
-│   ├── src
-│   │   └── BuyMeACoffee.sol          ← smart contract code
-│   └──out/BuyMeACoffee.sol
-│       └── BuyMeACoffee.json         ← output from "forge build" which contains the updated ABI
-│
-└── web/app/buy-me-coffee
-    └── _contracts
-        ├── BuyMeACoffeeABI.ts             ← copy of ABI from contracts/out/BuyMeACoffee.json
-        └── useBuyMeACoffeeContract.ts     ← deploy address
-```
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
-### Importing updated ABI to frontend code
+## Deploy on Vercel
 
-After updating your smart contract code, run `forge build` in the `contracts` folder. This will create a json in the `contracts/out` directory.
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-The output json contains additional information. We only need the `abi` property from that json object. Let's use `jq` to extract just the `abi` property
-
-```bash
-# from the "contract" folder
-
-jq .abi out/BuyMeACoffee/BuyMeACoffee.json
-```
-
-Take the output of `jq` and update `web/app/buy-me-coffee/_contracts/BuyMeACoffeeABI.ts`
-
-Done with first step!
-
-### Deploying your smart contract and updating frontend code
-
-Make sure you got all the environment variables squared away in `contracts/.env` and get some base sepolia eth from a faucet!
-
-To deploy your smart contract,
-
-```bash
-# from the "contract" folder
-
-source .env && forge script script/LocalContract.s.sol:LocalContractScript  --broadcast --rpc-url https://sepolia.base.org
-```
-
-In the long output, find the value for `Contract Address`.
-
-Copy that value and update `web/app/buy-me-coffee/_contracts/useBuyMeACoffeeContract.ts` with the new address.
-
-## Outro
-
-This is one of the more error prone steps. Take it step by step.
-
-If you are new smart contract deployment, just try deploying the existing `BuyMeACoffee` contract and replace the contract address. After, try updating `BuyMeACoffee.sol` and get the new ABI in your frontend code.
-
-We are thinking of ways to make this step easier in the future! Happy hacking!
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.

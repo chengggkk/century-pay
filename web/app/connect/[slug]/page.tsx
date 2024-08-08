@@ -1,8 +1,13 @@
-// pages/index.js
+"use client";
 import Head from "next/head";
-import ConnectBtn from "../components/ConnectBtn";
+import ConnectBtn from "../../../components/ConnectBtn";
+import { useEffect } from "react";
 
-export default function Home() {
+export default function Page({ params }: { params: { slug: string } }) {
+    useEffect(() => {
+        console.log(params.slug);
+    }, []);
+
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-900">
             <Head>
@@ -15,7 +20,7 @@ export default function Home() {
             </Head>
 
             <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
-                <h1 className="text-white"> Century Pay</h1>
+                <ConnectBtn params={params} />
             </main>
         </div>
     );
