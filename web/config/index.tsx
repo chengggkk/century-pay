@@ -13,12 +13,12 @@ import {
 } from "wagmi/chains";
 
 // Your WalletConnect Cloud project ID
-export const projectId = "5a1867c947abfa58cd91a9befc9dd02a";
+export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 
 // Create a metadata object
 const metadata = {
-    name: "century-pay",
-    description: "AppKit Example",
+    name: "Century Pay",
+    description: "A discord bot that makes onchain payments easy",
     url: "https://github.com/chengggkk/century-pay", // origin must match your domain & subdomain
     icons: ["https://avatars.githubusercontent.com/u/153604637"],
 };
