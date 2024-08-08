@@ -17,7 +17,7 @@ const userlinkSchema = new mongoose.Schema({
     address: {
         type: String,
         required: true,
-        default: null
+        default: "0x"
     }
 });
 
