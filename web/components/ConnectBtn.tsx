@@ -17,16 +17,24 @@ export default function ConnectBtn() {
     const { data: hash, isPending, sendTransaction } = useSendTransaction();
 
     return (
-        <div>
-            <w3m-button />
+        <>
+            {!hash && <w3m-button />}
 
-            <button
-                className="m-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg transition duration-200 ease-in-out transform hover:scale-105"
-                disabled={isPending}
-                onClick={submit}
-            >
-                {isPending ? "Confirming..." : "Send"}
-            </button>
-        </div>
+            {!isDisconnected && !hash && (
+                <button
+                    className="m-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg transition duration-200 ease-in-out transform hover:scale-105"
+                    disabled={isPending}
+                    onClick={submit}
+                >
+                    {isPending ? "Confirming..." : "Send"}
+                </button>
+            )}
+            {hash && (
+                <>
+                    <h2 className="text-white">✅</h2>
+                    <h2 className="text-white">You may now close the window</h2>
+                </>
+            )}
+        </>
     );
 }
