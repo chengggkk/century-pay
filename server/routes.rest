@@ -2,7 +2,7 @@ GET http://localhost:3000/userlinks
 ###
 
 
-GET http://localhost:3000/subscribers/66b266261fa47c7c3b526ccc
+GET http://localhost:3000/userlinks/user/742311839710576770/address
 ###
 
 POST http://localhost:3000/userlinks
@@ -13,3 +13,12 @@ Content-Type: application/json
   "autolink": "ABCD",
   "address": "0xEb6fb919256C9ebc92886EfF6e289CA8E0Fdec78"
 }
+
+###
+### Get address for a specific user
+
+
+GET http://localhost:3000/user/918880363013627936/address
+Accept: application/json
+
+
