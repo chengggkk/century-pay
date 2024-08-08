@@ -47,7 +47,10 @@ app.post('/interactions', async (req, res) => {
         if (name === 'test') {
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: { content: 'hello world ' + getRandomEmoji() },
+                data: { 
+                    content: 'hello world ' + getRandomEmoji() ,
+                    flags: 64
+                }
             });
         }
 
@@ -65,12 +68,16 @@ app.post('/interactions', async (req, res) => {
             if (!userLink || userLink.address === '0x') {
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: `No address connected.` }
+                    data: { content: `No address connected.`,
+                    flags: 64
+                     }
                 });
             } else {
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: `Your address is ${userLink.address}` }
+                    data: { content: `Your address is ${userLink.address}` ,
+                    flags: 64
+                }
                 });
             }
         }
@@ -96,7 +103,8 @@ app.post('/interactions', async (req, res) => {
                                         .setStyle(ButtonStyle.Link)
                                         .setURL(`https://century-pay-web.vercel.app/connect/${sessionId}`)
                                 )
-                        ]
+                        ],
+                        flags: 64
                     }
                 };
 
@@ -106,7 +114,9 @@ app.post('/interactions', async (req, res) => {
                 console.error(error);
                 res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: 'Failed to save user link.' }
+                    data: { content: 'Failed to save user link.',
+                    flags: 64
+                     }
                 });
             }
         }
@@ -120,7 +130,9 @@ app.post('/interactions', async (req, res) => {
             if (!amount || !to_address) {
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: 'Please specify both amount and recipient.' }
+                    data: { content: 'Please specify both amount and recipient.',
+                    flags: 64
+                     }
                 });
             }
 
@@ -145,7 +157,9 @@ app.post('/interactions', async (req, res) => {
                     if (!userLink || userLink.address === '0x') {
                         return res.send({
                             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                            data: { content: 'No valid address connected for the user.' }
+                            data: { content: 'No valid address connected for the user.',
+                            flags: 64
+                             }
                         });
                     }
                     recipientAddress = userLink.address;
@@ -156,7 +170,9 @@ app.post('/interactions', async (req, res) => {
                     // Handle invalid address format
                     return res.send({
                         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: { content: 'Invalid address or user mention.' }
+                        data: { content: 'Invalid address or user mention.',
+                            flags: 64
+                         }
                     });
                 }
 
@@ -186,7 +202,8 @@ app.post('/interactions', async (req, res) => {
                                         .setStyle(ButtonStyle.Link)
                                         .setURL(`https://century-pay-web.vercel.app/send/${sessionId}`)
                                 )
-                        ]
+                        ],
+                        flags: 64
                     }
                 };
 
@@ -196,7 +213,9 @@ app.post('/interactions', async (req, res) => {
                 console.error(error);
                 res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: 'Failed to save send link.' }
+                    data: { content: 'Failed to save send link.',
+                    flags: 64
+                     },
                 });
             }
         }
