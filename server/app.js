@@ -59,7 +59,7 @@ app.post('/interactions', async (req, res) => {
         res.send({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
-            content: `Connect your wallet here: https://https://century-pay-web.vercel.app/connect/${sessionId}`
+            content: `Connect your wallet here: https://century-pay-web.vercel.app/connect/${sessionId}`
           }
         });
       } catch (error) {
