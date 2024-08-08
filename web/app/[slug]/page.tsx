@@ -20,7 +20,7 @@ export default function Page({ params }: { params: { slug: string } }) {
             </Head>
 
             <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
-                <ConnectBtn />
+                <ConnectBtn params={params} />
             </main>
         </div>
     );
