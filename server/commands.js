@@ -43,8 +43,14 @@ const SEND_COMMAND = {
   ],
 };
 
+const CHECK_COMMAND = {
+  name: 'check',
+  description: 'Check the balance of a wallet',
+  type: 1,
+};
+
 // Update command list
-const ALL_COMMANDS = [TEST_COMMAND, CONNECT_COMMAND, SEND_COMMAND];
+const ALL_COMMANDS = [TEST_COMMAND, CONNECT_COMMAND, SEND_COMMAND, CHECK_COMMAND];
 
 // Install commands
 InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);

@@ -49,6 +49,32 @@ app.post('/interactions', async (req, res) => {
       });
     }
 
+    if (name === 'check') {
+        let userLink = await userlink.findOne({ user: userId }).sort({ generateTIME: -1 });
+    
+        // Loop to find the most recent valid address
+        while (userLink && userLink.address === '0x') {
+            userLink = await userlink.findOne({ 
+                user: userId, 
+                generateTIME: { $lt: userLink.generateTIME } // Find the previous record
+            }).sort({ generateTIME: -1 });
+        }
+    
+        if (!userLink || userLink.address === '0x') {
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: `No address connected.` }
+            });
+        } else {
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: `Your address is ${userLink.address}` }
+            });
+        }
+    }
+    
+    
+
     if (name === 'connect') {
       const sessionId = Math.random().toString(36).substring(2, 15);
       const timestamp = new Date();
