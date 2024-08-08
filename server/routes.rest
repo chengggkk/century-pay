@@ -10,5 +10,6 @@ Content-Type: application/json
 
 {
   "user": "howbaichi",
-  "autolink": "ABCD"
+  "autolink": "ABCD",
+  "address": "0xEb6fb919256C9ebc92886EfF6e289CA8E0Fdec78"
 }

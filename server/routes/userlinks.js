@@ -4,6 +4,31 @@ import Userlink from "../models/userlink.js";
 
 const router = express.Router();
 
+router.put('/update', async (req, res) => {
+    const { sessionId, address } = req.body;
+  
+    if (!sessionId || !address) {
+      return res.status(400).send({ error: 'Session ID and address are required' });
+    }
+  
+    try {
+      const updatedUserLink = await userlink.findOneAndUpdate(
+        { autolink: sessionId },
+        { address },
+        { new: true } // Return the updated document
+      );
+  
+      if (!updatedUserLink) {
+        return res.status(404).send({ error: 'User link not found' });
+      }
+  
+      res.send(updatedUserLink);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ error: 'Failed to update user link' });
+    }
+  });
+
 // GET all
 router.get("/", async (req, res) => {
     try {
@@ -23,7 +48,8 @@ router.get("/:id", getUserlink, (req, res) => {
 router.post("/", async (req, res) => {
     const userlink = new Userlink({
         user: req.body.user,
-        autolink: req.body.autolink
+        autolink: req.body.autolink,
+        address: req.body.address
     });
     try {
         const newUserlink = await userlink.save();

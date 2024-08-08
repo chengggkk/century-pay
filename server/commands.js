@@ -18,13 +18,13 @@ const TEST_COMMAND = {
 };
 
 const CONNECT_COMMAND = {
-  name: 'create_wallet',
-  description: 'Create a new wallet',
-  type: 1, // CHAT_INPUT
-};
+  name: 'connect',
+  description: 'Connect to a wallet',
+  type: 1,
+}
 
 const SEND_COMMAND = {
-  name: 'pay',
+  name: 'send',
   description: 'Pay a specified amount',
   type: 1, // CHAT_INPUT
   options: [
