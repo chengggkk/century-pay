@@ -1,9 +1,9 @@
 import 'dotenv/config';
-import { ethers, JsonRpcApiProvider } from "ethers";
+import { ethers } from "ethers";
+import { NETWORKS } from "./network.js";
 console.log(ethers.providers); // Should log the available providers if imported correctly
 
 import express from 'express';
-import Web3 from 'web3';
 import mongoose from 'mongoose';
 import { InteractionType, InteractionResponseType } from 'discord-interactions';
 import { VerifyDiscordRequest, getRandomEmoji } from './utils.js';
@@ -16,7 +16,6 @@ import { ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const web3 = new Web3(process.env.INFURA_URL);
 
 
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
@@ -33,8 +32,6 @@ app.use('/subscribers', subscribersRouter);
 app.use('/userlinks', userlinksRouter);
 
 app.get('/', (req, res) => res.send('Express on Vercel'));
-
-
 
 
 app.post('/interactions', async (req, res) => {
@@ -87,6 +84,15 @@ app.post('/interactions', async (req, res) => {
         }
 
         if (name === 'faucet') {
+            const network = options.find(option => option.name === 'network')?.value;
+            if (network !== 'sepolia' && network !== 'optimismSepolia' && network !== 'baseSepolia') {
+                return res.send({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: { content: `Current newtwork is not supported. Current supported networks are: \`sepolia\`, \`optimismSepolia\`, \`baseSepolia\`` ,
+                    flags: 64
+                }
+                });
+            }
             let userLink = await userlink.findOne({ user: userId }).sort({ generateTIME: -1 });
             // Find the most recent valid address
             while (userLink && userLink.address === '0x') {
@@ -107,7 +113,7 @@ app.post('/interactions', async (req, res) => {
             const amountToSend = "1000000000000000"; // 0.001 ETH in Wei
             
             // Load wallet from private key in .env
-            const provider = new ethers.JsonRpcProvider(process.env.INFURA_URL); // Ensure .env contains INFURA_URL
+            const provider = new ethers.JsonRpcProvider(NETWORKS[network].url); // Ensure .env contains INFURA_URL
             const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
         
             try {
@@ -126,7 +132,7 @@ app.post('/interactions', async (req, res) => {
                                     new ButtonBuilder()
                                         .setLabel('blockscout🔎')
                                         .setStyle(ButtonStyle.Link)
-                                        .setURL(`https://eth-sepolia.blockscout.com/tx/${tx.hash}`)
+                                        .setURL(`${NETWORKS[network].blockscout}/tx/${tx.hash}`)
                                 )
                         ],
                         flags: 64
