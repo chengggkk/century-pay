@@ -1,40 +1,6 @@
 import dbConnect from "../../../lib/dbConnect";
-import {
-    createConfig,
-} from "wagmi";
-import { http } from "@wagmi/core";
-import {
-    base,
-    baseSepolia,
-    mainnet,
-    optimism,
-    optimismSepolia,
-    sepolia,
-} from "wagmi/chains";
 import sendlink from "../../../models/sendlink";
 import { NextRequest } from "next/server";
-
-
-const chains = [
-    mainnet,
-    sepolia,
-    base,
-    baseSepolia,
-    optimism,
-    optimismSepolia,
-] as const;
-const signConfig = createConfig({
-    chains: chains,
-    transports: {
-        [mainnet.id]: http(),
-        [sepolia.id]: http(),
-        [base.id]: http(),
-        [baseSepolia.id]: http(),
-        [optimism.id]: http(),
-        [optimismSepolia.id]: http(),
-    },
-});
-
 
 export async function GET(req: NextRequest) {
     const sendautolink = req.nextUrl.searchParams.get("sendautolink");
