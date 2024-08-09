@@ -53,14 +53,6 @@ const FAUCET_COMMAND = {
     name: "faucet",
     description: "Get some test tokens",
     type: 1,
-    options: [
-        {
-            type: 3, // STRING
-            name: "network",
-            description: "Which blockchain network to get tokens on",
-            required: true,
-        },
-    ],
 };
 
 // Update command list
