@@ -4,6 +4,29 @@ import Userlink from "../models/userlink.js";
 
 const router = express.Router();
 
+
+
+// Route to get the latest valid address for a user by userId
+router.get('/user/:userId/address', async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        // Find the most recent userlink document where address is not "0x"
+        let userLink = await Userlink.findOne({ user: userId, address: { $ne: "0x" } })
+            .sort({ generateTIME: -1 });
+
+        if (!userLink) {
+            return res.status(404).json({ error: "No valid address found for this user." });
+        }
+
+        res.json({ address: userLink.address });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "An error occurred while retrieving the address." });
+    }
+});
+
+
 router.put('/update', async (req, res) => {
     const { sessionId, address } = req.body;
   
@@ -38,66 +61,5 @@ router.get("/", async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
-
-// GET one
-router.get("/:id", getUserlink, (req, res) => {
-    res.json(res.userlink);
-});
-
-// CREATE one
-router.post("/", async (req, res) => {
-    const userlink = new Userlink({
-        user: req.body.user,
-        autolink: req.body.autolink,
-        address: req.body.address
-    });
-    try {
-        const newUserlink = await userlink.save();
-        res.status(201).json(newUserlink);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-});
-
-// UPDATE one
-router.patch("/:id", getUserlink, async (req, res) => {
-    if (req.body.user != null) {
-        res.userlink.user = req.body.user;
-    }
-    if (req.body.autolink != null) {
-        res.userlink.autolink = req.body.autolink;
-    }
-    try {
-        const updatedUserlink = await res.userlink.save();
-        res.json(updatedUserlink);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-});
-
-// DELETE one
-router.delete("/:id", getUserlink, async (req, res) => {
-    try {
-        await res.userlink.remove();
-        res.json({ message: "Deleted Userlink" });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-async function getUserlink(req, res, next) {
-    let userlink;
-    try {
-        userlink = await Userlink.findById(req.params.id);
-        if (userlink == null) {
-            return res.status(404).json({ message: "Cannot find userlink" });
-        }
-    } catch (err) {
-        return res.status(500).json({ message: err.message });
-    }
-
-    res.userlink = userlink;
-    next();
-}
 
 export default router;
