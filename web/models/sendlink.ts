@@ -26,6 +26,10 @@ const sendlinkSchema = new mongoose.Schema({
         type: String,
         required: false,
     },
+    network: {
+        type: String,
+        required: false,
+    },
 });
 
 

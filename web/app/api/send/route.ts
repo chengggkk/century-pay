@@ -17,13 +17,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: Request) {
     const body = await req.json();
-    const { sendautolink, transactionHash } = body;
+    const { sendautolink, transactionHash, network } = body;
     try {
         await dbConnect();
 
         const res = await sendlink.updateOne(
             { sendautolink: sendautolink },
-            { transactionHash: transactionHash }
+            { transactionHash: transactionHash, network: network }
         );
 
         return Response.json(JSON.stringify(res));
