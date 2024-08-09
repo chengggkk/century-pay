@@ -21,7 +21,11 @@ const sendlinkSchema = new mongoose.Schema({
     to_address: {
         type: String,
         required: true,
-    }
+    },
+    transactionHash: {
+        type: String,
+        required: false,
+    },
 });
 
 

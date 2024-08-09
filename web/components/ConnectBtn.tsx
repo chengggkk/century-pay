@@ -8,6 +8,7 @@ export default function ConnectBtn({ params }: { params: { slug: string } }) {
     const [message, setMessage] = useState("");
 
     async function sign() {
+        setMessage("Loading...");
         const message = `session ID: ${params.slug}`;
         const data = await signMessageAsync({ message });
 
