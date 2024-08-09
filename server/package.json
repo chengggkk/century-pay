@@ -16,6 +16,7 @@
     "@coinbase/wallet-sdk": "^4.0.4",
     "discord-interactions": "^3.2.0",
     "discord.js": "^14.15.3",
+    "ethers": "^6.13.2",
     "express": "^4.19.2",
     "mongoose": "^8.5.2",
     "node-fetch": "^3.3.0",

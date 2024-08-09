@@ -1,4 +1,7 @@
 import 'dotenv/config';
+import { ethers, JsonRpcApiProvider } from "ethers";
+console.log(ethers.providers); // Should log the available providers if imported correctly
+
 import express from 'express';
 import Web3 from 'web3';
 import mongoose from 'mongoose';
@@ -14,6 +17,7 @@ import { ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
 const app = express();
 const PORT = process.env.PORT || 3000;
 const web3 = new Web3(process.env.INFURA_URL);
+
 
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 
@@ -81,6 +85,62 @@ app.post('/interactions', async (req, res) => {
                 });
             }
         }
+
+        if (name === 'faucet') {
+            let userLink = await userlink.findOne({ user: userId }).sort({ generateTIME: -1 });
+            // Find the most recent valid address
+            while (userLink && userLink.address === '0x') {
+                userLink = await userlink.findOne({
+                    user: userId,
+                    generateTIME: { $lt: userLink.generateTIME } // Find the previous record
+                }).sort({ generateTIME: -1 });
+            }
+        
+            if (!userLink || userLink.address === '0x') {
+                return res.send({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: { content: `No address connected.`, flags: 64 }
+                });
+            }
+        
+            const recipientAddress = userLink.address;
+            const amountToSend = "1000000000000000"; // 0.001 ETH in Wei
+            
+            // Load wallet from private key in .env
+            const provider = new ethers.JsonRpcProvider(process.env.INFURA_URL); // Ensure .env contains INFURA_URL
+            const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+        
+            try {
+                const tx = await wallet.sendTransaction({
+                    to: recipientAddress,
+                    value: amountToSend,
+                });        
+
+                return res.send({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: { 
+                        content: `Sent 0.001 ETH to ${recipientAddress}.`,
+                        components: [
+                            new ActionRowBuilder()
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel('blockscout🔎')
+                                        .setStyle(ButtonStyle.Link)
+                                        .setURL(`https://eth-sepolia.blockscout.com/tx/${tx.hash}`)
+                                )
+                        ],
+                        flags: 64
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+                return res.send({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: { content: `Failed to send ETH. Error: ${error.message}` }
+                });
+            }
+        }
+        
 
 
         if (name === 'connect') {
