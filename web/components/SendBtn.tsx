@@ -1,56 +1,56 @@
 "use client";
-import { useWeb3Modal, useWeb3ModalState } from "@web3modal/wagmi/react";
-import { useEffect } from "react";
-import {
-    useSendTransaction,
-    useAccount,
-    useSignMessage,
-    createConfig,
-} from "wagmi";
+import { useState } from "react";
+import { useSendTransaction, useAccount } from "wagmi";
 import { parseEther } from "viem";
-import { verifyMessage, http } from "@wagmi/core";
-import {
-    base,
-    baseSepolia,
-    mainnet,
-    optimism,
-    optimismSepolia,
-    sepolia,
-} from "wagmi/chains";
 
-const chains = [
-    mainnet,
-    sepolia,
-    base,
-    baseSepolia,
-    optimism,
-    optimismSepolia,
-] as const;
-const signConfig = createConfig({
-    chains: chains,
-    transports: {
-        [mainnet.id]: http(),
-        [sepolia.id]: http(),
-        [base.id]: http(),
-        [baseSepolia.id]: http(),
-        [optimism.id]: http(),
-        [optimismSepolia.id]: http(),
-    },
-});
-
-export default function ConnectBtn({ params }: { params: { slug: string } }) {
-    const { open, close } = useWeb3Modal();
-    const { address, isConnecting, isDisconnected } = useAccount();
-    const { open: isOpened, selectedNetworkId } = useWeb3ModalState();
-    const { signMessage, signMessageAsync, data } = useSignMessage();
+export default function SendBtn({ params }: { params: { slug: string } }) {
+    const { isDisconnected } = useAccount();
+    const [message, setMessage] = useState("");
 
     async function submit() {
-        const to = `0x6281f95BD27c9d3FF9b72A4bd670554550c7de8f`;
-        const value = "0.001";
-        sendTransaction({ to, value: parseEther(value) });
+        try {
+            setMessage("Loading...");
+            const response = await fetch(
+                `/api/send?sendautolink=${params.slug}`,
+                {
+                    method: "GET", // Specify the request method
+                }
+            );
+            const json = await response.json();
+            const { to_address: to, amount: value } = JSON.parse(json);
+            const tx = await sendTransactionAsync({
+                to,
+                value: parseEther(String(value)),
+            });
+            const body = {
+                sendautolink: `${params.slug}`,
+                transactionHash: tx,
+            };
+            {
+                const response = await fetch(`/api/send`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json", // Set the Content-Type header
+                    },
+                    body: JSON.stringify(body), // Convert the data to a JSON string
+                });
+                if (response.ok) {
+                    setMessage("✅\nYou may now close the window");
+                } else {
+                    const json = await response.json();
+                    setMessage(`❌\nAn error occurred ${json.error}`);
+                }
+            }
+        } catch (error) {
+            setMessage(`❌\nAn error occurred ${error}`);
+        }
     }
 
-    const { data: hash, isPending, sendTransaction } = useSendTransaction();
+    const {
+        data: hash,
+        isPending,
+        sendTransactionAsync,
+    } = useSendTransaction();
 
     return (
         <>
@@ -67,8 +67,7 @@ export default function ConnectBtn({ params }: { params: { slug: string } }) {
             )}
             {hash && (
                 <>
-                    <h2 className="text-white">✅</h2>
-                    <h2 className="text-white">You may now close the window</h2>
+                    <h2 className="text-white">{message}</h2>
                 </>
             )}
         </>
