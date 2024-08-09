@@ -8,10 +8,11 @@ import subscribersRouter from './routes/subscribers.js';
 import userlink from './models/userlink.js';
 import userlinksRouter from './routes/userlinks.js';
 import sendlink from './models/sendlink.js';
-import {
-    ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder,} from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Client, GatewayIntentBits} from 'discord.js';
 import { getFakeProfile, fakePlayerProfiles } from './game.js';
-import { paginationEmbed } from './pagination.js';
+import { run } from 'node:test';
+
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +20,85 @@ const PORT = process.env.PORT || 3000;
 // Set up Web3 and ethers
 const provider = new ethers.JsonRpcProvider(process.env.INFURA_URL);
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+const changeStream = userlink.watch(
+    [ { $match: { 'operationType': 'insert' } } ],
+    { fullDocument: 'updateLookup' }
+);
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.MessageContent,
+    ],
+});
+
+
+
+client.once('ready', () => {
+    console.log(`Logged in as ${client.user.tag}`);
+});
+
+client.on('interactionCreate', async (interaction) => {
+
+    if (commandName === 'sender' || commandName === 'receiver') {
+        let page = 1;
+        if (interaction.isButton()) {
+            const [action, commandName, pageNumber] = customId.split('_');
+            page = parseInt(pageNumber, 10);
+            page = action === 'next' ? page + 1 : page - 1;
+        }
+
+        const recordsPerPage = 10;
+        const skip = (page - 1) * recordsPerPage;
+        const query = commandName === 'sender'
+            ? { sender_address: interaction.user.id }
+            : { to_address: interaction.user.id };
+
+        const transactions = await sendlink.find(query)
+            .sort({ generateTIME: -1 })
+            .skip(skip)
+            .limit(recordsPerPage + 1);
+
+        if (transactions.length === 0) {
+            return interaction.reply({ content: 'No transactions found.', ephemeral: true });
+        }
+
+        const embed = new EmbedBuilder()
+            .setTitle(`Transactions (Page ${page})`)
+            .setColor(0x00AE86)
+            .addFields(
+                transactions.slice(0, recordsPerPage).map(trx => ({
+                    name: `Amount: ${trx.amount}`,
+                    value: `**Sender Address:** ${trx.sender_address}\n**Time:** ${trx.generateTIME.toISOString().replace(/T/, ' ').replace(/\..+/, '')}`,
+                    inline: false
+                }))
+            );
+
+        const response = {
+            embeds: [embed],
+            components: [
+                new ActionRowBuilder()
+                    .addComponents(
+                        new ButtonBuilder()
+                            .setCustomId(`prev_${page}`)
+                            .setLabel('Previous Page')
+                            .setStyle(ButtonStyle.Primary)
+                            .setDisabled(page === 1),
+                        transactions.length > recordsPerPage
+                            ? new ButtonBuilder()
+                                .setCustomId(`next_${page}`)
+                                .setLabel('Next Page')
+                                .setStyle(ButtonStyle.Primary)
+                            : null
+                    ).filter(Boolean)
+            ]
+        };
+
+        await interaction.update(response);
+    }
+});
+
+client.login(process.env.DISCORD_TOKEN);
 
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 
@@ -31,7 +111,18 @@ app.use('/userlinks', userlinksRouter);
 
 app.get('/', (req, res) => res.send('Express on Vercel'));
 
+
+changeStream.on('change', async (change) => {
+    console.log('Change detected:', change);
+    const channel = client.channels.cache.get('');
+    if (channel) {
+        await channel.send(`Detected a change: ${JSON.stringify(change)}`);
+    }
+});
+
+
 app.post('/interactions', async (req, res) => {
+    
     const { type, data, member, user } = req.body;
 
     if (type === InteractionType.PING) {
@@ -43,6 +134,24 @@ app.post('/interactions', async (req, res) => {
         const userId = member?.user?.id || user?.id;
 
         try {
+            client.on('interactionCreate', async (interaction) => {
+                if (!interaction.isCommand()) return;
+            
+                const { commandName } = interaction;
+            
+                if (commandName === 'embed') {
+                    const embed1 = new EmbedBuilder()
+                        .setTitle('Embed 1')
+                        .setDescription('This is the first embed.');
+            
+                    const embed2 = new EmbedBuilder()
+                        .setTitle('Embed 2')
+                        .setDescription('This is the second embed.');
+            
+                    const pages = [embed1, embed2];
+                    buttonpages(interaction, pages);
+                }
+            });
             if (name === 'check') {
                 let userLink = await userlink.findOne({ user: userId }).sort({ generateTIME: -1 });
 
@@ -63,6 +172,8 @@ app.post('/interactions', async (req, res) => {
                     data: { content, flags: 64 }
                 });
             }
+
+            
 
             if (name === 'faucet') {
                 let userLink = await userlink.findOne({ user: userId }).sort({ generateTIME: -1 });
@@ -131,13 +242,12 @@ app.post('/interactions', async (req, res) => {
 
 
 
-
             if (type === InteractionType.APPLICATION_COMMAND || type === InteractionType.MESSAGE_COMPONENT) {
                 const { name, options, custom_id } = data;
                 const userId = member?.user?.id || user?.id;
-
+            
                 let page = 1;
-
+            
                 if (type === InteractionType.MESSAGE_COMPONENT) {
                     // Extract information from the custom ID
                     const [action, commandName, actionType, pageNumber] = custom_id.split('_');
@@ -147,84 +257,89 @@ app.post('/interactions', async (req, res) => {
                 } else if (options && options.length) {
                     page = parseInt(options[0].value, 10) || 1;
                 }
-
+            
                 if (name === 'sender' || name === 'receiver') {
                     // Find the most recent valid address
                     let userLink = await userlink.findOne({ user: userId }).sort({ generateTIME: -1 });
-
+            
                     while (userLink && userLink.address === '0x') {
                         userLink = await userlink.findOne({
                             user: userId,
                             generateTIME: { $lt: userLink.generateTIME }
                         }).sort({ generateTIME: -1 });
                     }
-
+            
                     if (!userLink || userLink.address === '0x') {
                         return res.send({
                             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                             data: { content: 'No address connected.', flags: 64 }
                         });
                     }
-
+            
                     // Pagination setup
                     const recordsPerPage = 10;
                     const skip = (page - 1) * recordsPerPage;
-
+            
                     // Query based on the command type
                     const query = name === 'sender'
                         ? { sender_address: userLink.address }
                         : { to_address: userLink.address };
-
+            
                     // Fetch transactions (including one extra to check for next page)
                     const transactions = await sendlink.find(query)
                         .sort({ generateTIME: -1 })
                         .skip(skip)
                         .limit(recordsPerPage + 1); // Fetch one extra record to check if the next page exists
-
+            
                     if (transactions.length === 0) {
                         return res.send({
                             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                             data: { content: 'No transactions found.', flags: 64 }
                         });
                     }
-
-                    // Create embeds for each page of transactions
-                    const embeds = [];
-                    for (let i = 0; i < Math.ceil(transactions.length / recordsPerPage); i++) {
-                        const pageTransactions = transactions.slice(i * recordsPerPage, (i + 1) * recordsPerPage);
-
-                        const embed = new EmbedBuilder()
-                            .setTitle(`Transactions (Page ${i + 1})`)
-                            .setColor(0x00AE86)
-                            .addFields(
-                                pageTransactions.map(trx => ({
-                                    name: `Amount: ${trx.amount}`,
-                                    value: `**Sender Address:** ${trx.sender_address}\n**Time:** ${trx.generateTIME.toISOString().replace(/T/, ' ').replace(/\..+/, '')}`,
-                                    inline: false
-                                }))
-                            )
-                            .setFooter({ text: `Page ${i + 1} / ${Math.ceil(transactions.length / recordsPerPage)}` });
-
-                        embeds.push(embed);
+            
+                    // Format the transactions into an embed
+                    const embed = new EmbedBuilder()
+                        .setTitle(`Transactions (Page ${page})`)
+                        .setColor(0x00AE86)
+                        .addFields(
+                            transactions.slice(0, recordsPerPage).map(trx => ({
+                                name: `Amount: ${trx.amount}`,
+                                value: `**Sender Address:** ${trx.sender_address}\n**Time:** ${trx.generateTIME.toISOString().replace(/T/, ' ').replace(/\..+/, '')}`,
+                                inline: false
+                            }))
+                        );
+            
+                    // Prepare response with pagination buttons
+                    const response = {
+                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                        data: {
+                            embeds: [embed],
+                            components: [
+                                new ActionRowBuilder()
+                                    .addComponents(
+                                        new ButtonBuilder()
+                                            .setCustomId(`paginate_${name}_prev_${page}`)
+                                            .setLabel('Previous Page')
+                                            .setStyle(ButtonStyle.Primary)
+                                            .setDisabled(page === 1)
+                                    )
+                            ],
+                            flags: 64
+                        }
+                    };
+            
+                    // If more records are available, show the next page button
+                    if (transactions.length > recordsPerPage) {
+                        response.data.components[0].addComponents(
+                            new ButtonBuilder()
+                                .setCustomId(`paginate_${name}_next_${page}`)
+                                .setLabel('Next Page')
+                                .setStyle(ButtonStyle.Primary)
+                        );
                     }
-
-                    // Define buttons for pagination
-                    const prevButton = new ButtonBuilder()
-                        .setCustomId(`paginate_${name}_prev_${page}`)
-                        .setLabel('Previous Page')
-                        .setStyle(ButtonStyle.Primary)
-                        .setDisabled(page === 1);
-
-                    const nextButton = new ButtonBuilder()
-                        .setCustomId(`paginate_${name}_next_${page}`)
-                        .setLabel('Next Page')
-                        .setStyle(ButtonStyle.Primary)
-                        .setDisabled(embeds.length <= 1 || transactions.length <= recordsPerPage);
-
-                    // Use the paginationEmbed function
-                    await paginationEmbed(interaction, embeds, [prevButton, nextButton]);
-
-                    return;
+            
+                    return res.send(response);
                 }
             }
 
@@ -405,6 +520,43 @@ app.listen(PORT, () => {
     console.log('Listening on port', PORT);
 });
 
+
+const pagination = async (interaction, embeds) => {
+    let currentPage = 0;
+
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId('prev')
+            .setLabel('Previous')
+            .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+            .setCustomId('next')
+            .setLabel('Next')
+            .setStyle(ButtonStyle.Primary)
+    );
+
+    const message = await interaction.reply({
+        embeds: [embeds[currentPage]],
+        components: [row],
+        fetchReply: true
+    });
+
+    const filter = i => i.customId === 'prev' || i.customId === 'next';
+    const collector = message.createMessageComponentCollector({ filter, time: 60000 });
+
+    collector.on('collect', async i => {
+        if (i.customId === 'prev') {
+            currentPage = currentPage > 0 ? --currentPage : embeds.length - 1;
+        } else if (i.customId === 'next') {
+            currentPage = currentPage + 1 < embeds.length ? ++currentPage : 0;
+        }
+        await i.update({ embeds: [embeds[currentPage]], components: [row] });
+    });
+
+    collector.on('end', collected => {
+        message.edit({ components: [] });
+    });
+};
+
+
 export default app;
-
-
