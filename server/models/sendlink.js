@@ -18,6 +18,10 @@ const sendlinkSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    sender_address: {
+        type: String,
+        required: true,
+    },
     to_address: {
         type: String,
         required: true,

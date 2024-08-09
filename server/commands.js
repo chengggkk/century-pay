@@ -55,8 +55,27 @@ const FAUCET_COMMAND = {
   type: 1,
 };
 
+const SENDER_COMMAND = {
+  name: 'sender',
+  description: 'Get the receipt of a transaction',
+  type: 1,
+};
+
+const RECEIVER_COMMAND = {
+  name: 'receiver',
+  description: 'Get the receipt of a transaction',
+  type: 1,
+};
+
+const profileCommand = {
+  name: 'profile',
+  description: 'View your profile',
+  type: 1,
+};
+
+
 // Update command list
-const ALL_COMMANDS = [TEST_COMMAND, CONNECT_COMMAND, SEND_COMMAND, CHECK_COMMAND, FAUCET_COMMAND];
+const ALL_COMMANDS = [TEST_COMMAND, CONNECT_COMMAND, SEND_COMMAND, CHECK_COMMAND, FAUCET_COMMAND, SENDER_COMMAND, RECEIVER_COMMAND, profileCommand];
 
 // Install commands
 InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);
