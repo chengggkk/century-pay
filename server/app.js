@@ -1,6 +1,4 @@
 import "dotenv/config";
-import { ethers } from "ethers";
-
 import express from "express";
 import mongoose from "mongoose";
 import { InteractionType, InteractionResponseType } from "discord-interactions";
@@ -13,10 +11,68 @@ import subscribersRouter from "./routes/subscribers.js";
 import userlink from "./models/userlink.js";
 import userlinksRouter from "./routes/userlinks.js";
 import sendlink from "./models/sendlink.js";
-import { ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
+import {
+    ButtonBuilder,
+    ButtonStyle,
+    ActionRowBuilder,
+    Client,
+    GatewayIntentBits,
+} from "discord.js";
+import { NETWORKS } from "./network.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.MessageContent,
+    ],
+});
+
+const sendLinkChangeStream = sendlink.watch([
+    { $match: { operationType: "update" } },
+]);
+sendLinkChangeStream.on("change", async (change) => {
+    if (change.ns.coll === "sendlinks" && change.operationType === "update") {
+        const id = change.documentKey._id;
+        const sendLink = await sendlink.findById(id);
+        const senderID = sendLink.user;
+        const sender = await client.users.fetch(senderID);
+        let userLink = await userlink
+            .findOne({ address: sendLink.to_address })
+            .sort({ generateTIME: -1 });
+
+        // Loop to find the most recent valid address
+        while (userLink && userLink.address === "0x") {
+            userLink = await userlink
+                .findOne({
+                    address: sendLink.to_address,
+                    generateTIME: { $lt: userLink.generateTIME }, // Find the previous record
+                })
+                .sort({ generateTIME: -1 });
+        }
+        let blockscoutLink;
+        for (let n in NETWORKS) {
+            if (NETWORKS[n].name === sendLink.network) {
+                blockscoutLink = `${NETWORKS[n].blockscout}/tx/${sendLink.transactionHash}`;
+            }
+        }
+        if (userLink !== null) {
+            const receiver = await client.users.fetch(userLink.user);
+            await receiver.send(
+                `You received ${sendLink.amount} ETH!\nCheck the transaction at [Blockscout](${blockscoutLink}) 🔎`
+            );
+        }
+
+        await sender.send(
+            `You sent ${sendLink.amount} ETH to ${sendLink.to_address}!\nCheck the transaction at [Blockscout](${blockscoutLink}) 🔎`
+        );
+    }
+});
+
+client.login(process.env.DISCORD_TOKEN);
 
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 
