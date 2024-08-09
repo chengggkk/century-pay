@@ -44,7 +44,7 @@ export async function GET(req: Request) {
         return Response.json(JSON.stringify(userlinks));
     } catch (error) {
         console.error(error);
-        return Response.error();
+        return Response.json({ error: "error" }, { status: 400 });
     }
 }
 
@@ -67,10 +67,10 @@ export async function POST(req: Request) {
             return Response.json(JSON.stringify(res));
         }
         else {
-            return Response.error();
+            return Response.json({ error: "Invalid signature" }, { status: 400 });
         }
     } catch (error) {
         console.error(error);
-        return Response.error();
+        return Response.json({ error: error }, { status: 400 });
     }
 }

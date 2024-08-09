@@ -25,12 +25,11 @@ export default function ConnectBtn({ params }: { params: { slug: string } }) {
                 },
                 body: JSON.stringify(body), // Convert the data to a JSON string
             });
-            console.log(response);
             if (response.ok) {
                 setMessage("✅\nYou may now close the window");
             } else {
                 const json = await response.json();
-                setMessage(`❌\nAn error occurred ${json}`);
+                setMessage(`❌\nAn error occurred ${json.error}`);
             }
         } catch (error) {
             setMessage(`❌\nAn error occurred ${error}`);
