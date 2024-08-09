@@ -49,8 +49,14 @@ const CHECK_COMMAND = {
   type: 1,
 };
 
+const FAUCET_COMMAND = {
+  name: 'faucet',
+  description: 'Get some test tokens',
+  type: 1,
+};
+
 // Update command list
-const ALL_COMMANDS = [TEST_COMMAND, CONNECT_COMMAND, SEND_COMMAND, CHECK_COMMAND];
+const ALL_COMMANDS = [TEST_COMMAND, CONNECT_COMMAND, SEND_COMMAND, CHECK_COMMAND, FAUCET_COMMAND];
 
 // Install commands
 InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);
