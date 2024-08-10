@@ -17,6 +17,10 @@ const createlinkSchema = new mongoose.Schema({
     option: {
         type: [String], 
         default: [] 
+    },
+    channelId: {
+        type: String,
+        required: true
     }
 });
 

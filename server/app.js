@@ -218,9 +218,12 @@ app.post("/interactions", async (req, res) => {
             }
         }
 
-        if (name === "vote") {
+        if (name === "createvote") {
+            console.log('Channel ID:', data.id);
+
             const sessionId = Math.random().toString(36).substring(2, 15);
             const timestamp = new Date();
+            const channelID = data.id;
         
             // 收集所有选项值并存储为数组
             const optionArray = [];
@@ -236,10 +239,13 @@ app.post("/interactions", async (req, res) => {
         
             const newcreateLink = new createlink({
                 user: userId,
-                votelink: sessionId,
+                createlink: sessionId,
                 generateTIME: timestamp,
                 option: optionArray, // 将选项存储为数组
+                channelId: channelID,
             });
+
+            await newcreateLink.save();
         
             // 保存投票链接到数据库
             // // 生成选项按钮数组
@@ -268,7 +274,7 @@ app.post("/interactions", async (req, res) => {
                 new ButtonBuilder()
                     .setLabel("Connect 🔁")
                     .setStyle(ButtonStyle.Link)
-                    .setURL(`https://century-pay-web.vercel.app/vote/${sessionId}`)
+                    .setURL(`https://century-pay-web.vercel.app/create/${sessionId}`)
             ];
         
             // 将按钮分配到 ActionRow 中
@@ -280,6 +286,7 @@ app.post("/interactions", async (req, res) => {
                 data: {
                     content: `Please connect:`,
                     components: [actionRow],
+                    flags: 64,
                 },
             });
         }

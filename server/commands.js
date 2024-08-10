@@ -74,7 +74,7 @@ const optionsArray = generateOptions(numOptions);
 
 // 定义 VOTE_COMMAND 对象
 const VOTE_COMMAND = {
-    name: "vote",
+    name: "createvote",
     description: "Vote for a candidate",
     type: 1, // CHAT_INPUT
     options: optionsArray,
