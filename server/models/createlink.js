@@ -14,7 +14,7 @@ const createlinkSchema = new mongoose.Schema({
         required: true,
         default: Date.now
     },
-    vote: {
+    option: {
         type: [String], 
         default: [] 
     }

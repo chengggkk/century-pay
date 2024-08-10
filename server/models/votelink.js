@@ -14,7 +14,7 @@ const votelinkSchema = new mongoose.Schema({
         required: true,
         default: Date.now
     },
-    option: {
+    choice: {
         type: String,
         required: true
     }
