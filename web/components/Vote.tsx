@@ -17,7 +17,7 @@ import { Button } from "./ui/button";
 import { encodeFunctionData, Hex } from "viem";
 import { OpStatus } from "./op-status";
 
-export const CreateVote = () => {
+export const Vote = () => {
     const user = useUser();
     const { address } = useAccount({ type: accountType });
     const { logout } = useLogout();
@@ -58,22 +58,28 @@ export const CreateVote = () => {
                 inputs: [
                     {
                         internalType: "uint256",
-                        name: "optionsNum",
+                        name: "id",
+                        type: "uint256",
+                    },
+                    {
+                        internalType: "uint256",
+                        name: "option",
                         type: "uint256",
                     },
                 ],
-                name: "createVote",
+                name: "vote",
                 outputs: [],
                 stateMutability: "nonpayable",
                 type: "function",
             },
         ];
         // TODO: fix this
-        const optionsNum = BigInt(3);
+        const id = BigInt(0);
+        const option = BigInt(0);
         const data = encodeFunctionData({
             abi: AlchemyTokenAbi,
-            functionName: "createVote",
-            args: [optionsNum],
+            functionName: "vote",
+            args: [id, option],
         });
 
         // send the user operation
@@ -103,7 +109,7 @@ export const CreateVote = () => {
                         className="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg transition duration-200 ease-in-out transform hover:scale-105"
                         onClick={send}
                     >
-                        Create Vote
+                        Vote
                     </button>
 
                     <Button
