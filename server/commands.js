@@ -94,7 +94,11 @@ const SENDER_COMMAND = {
     type: 1,
   };
 
-
+  const TESTVOTE_COMMAND = {
+    name: 'vote',
+    description: 'Get the receipt of a transaction',
+    type: 1,
+  };
 
 // Update command list
 const ALL_COMMANDS = [
@@ -106,6 +110,7 @@ const ALL_COMMANDS = [
     VOTE_COMMAND,
     SENDER_COMMAND,
     RECEIVER_COMMAND,
+    TESTVOTE_COMMAND,
 ];
 
 // Install commands

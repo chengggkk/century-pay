@@ -25,6 +25,7 @@ import {
 } from "discord.js";
 import { NETWORKS } from "./network.js";
 
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -39,6 +40,14 @@ const client = new Client({
 });
 
 
+client.on('messageCreate', message => {
+    console.log(message.content);
+    if (message.content === '!serverid') {
+        message.channel.send(`Server ID: ${message.guild.id}`);
+    }
+});
+
+client.login(process.env.DISCORD_TOKEN);
 
 const sendLinkChangeStream = sendlink.watch([
     { $match: { operationType: "update" } },
@@ -99,8 +108,19 @@ app.use("/userlinks", userlinksRouter);
 
 app.get("/", (req, res) => res.send("Express on Vercel"));
 
+app.get("/widget", async (req, res) => {
+    try {
+        const response = await fetch("https://discord.com/api/guilds/743404154508148808/widget.json");
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to fetch widget data" });
+    }
+});
+
 app.post("/interactions", async (req, res) => {
-    const { type, data, member, user } = req.body;
+    const { type, data, member, user, channel_id } = req.body;
     const { name, options, custom_id } = data;
 
 
@@ -110,6 +130,8 @@ app.post("/interactions", async (req, res) => {
 
     if (type === InteractionType.APPLICATION_COMMAND) {
         const userId = member?.user?.id || user?.id;
+        const channelId = channel_id; // 获取 channel_id
+
 
         if (name === "test") {
             return res.send({
@@ -218,25 +240,29 @@ app.post("/interactions", async (req, res) => {
             }
         }
 
+        if (name === "vote") {
+            
+        }
+
         if (name === "createvote") {
-            console.log('Channel ID:', data.id);
+            console.log('Channel ID:', channel_id);
 
             const sessionId = Math.random().toString(36).substring(2, 15);
             const timestamp = new Date();
             const channelID = data.id;
-        
+
             // 收集所有选项值并存储为数组
             const optionArray = [];
             for (let i = 1; i <= 10; i++) { // 假设最多有 10 个选项
                 const option = options.find(
                     (opt) => opt.name === `option${i}`
                 )?.value;
-        
+
                 if (option !== undefined) {
                     optionArray.push(option);
                 }
             }
-        
+
             const newcreateLink = new createlink({
                 user: userId,
                 createlink: sessionId,
@@ -246,7 +272,7 @@ app.post("/interactions", async (req, res) => {
             });
 
             await newcreateLink.save();
-        
+
             // 保存投票链接到数据库
             // // 生成选项按钮数组
             // const buttons = [];
@@ -258,7 +284,7 @@ app.post("/interactions", async (req, res) => {
             //             .setStyle(ButtonStyle.Primary)
             //     );
             // }
-        
+
             // // 将按钮分配到 ActionRow 中
             // const actionRows = [];
             // const maxButtonsPerRow = 5; // 每行最多 5 个按钮
@@ -268,7 +294,7 @@ app.post("/interactions", async (req, res) => {
             //         new ActionRowBuilder().addComponents(rowButtons)
             //     );
             // }
-        
+
             // 返回响应
             const buttons = [
                 new ButtonBuilder()
@@ -276,10 +302,10 @@ app.post("/interactions", async (req, res) => {
                     .setStyle(ButtonStyle.Link)
                     .setURL(`https://century-pay-web.vercel.app/create/${sessionId}`)
             ];
-        
+
             // 将按钮分配到 ActionRow 中
             const actionRow = new ActionRowBuilder().addComponents(buttons);
-        
+
             // 返回响应
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -290,7 +316,7 @@ app.post("/interactions", async (req, res) => {
                 },
             });
         }
-        
+
 
 
         if (name === "send") {
