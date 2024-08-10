@@ -208,6 +208,44 @@ app.post("/interactions", async (req, res) => {
             }
         }
 
+        if (name === "vote") {
+            // 生成选项数组
+            const buttons = [];
+            for (let i = 1; i <= 10; i++) { // 假设最多有 10 个选项
+                const option = options.find(
+                    (opt) => opt.name === `option${i}`
+                )?.value;
+        
+                // 只在 option 不为 undefined 的情况下创建按钮
+                if (option !== undefined) {
+                    buttons.push(
+                        new ButtonBuilder()
+                            .setCustomId(`candidate${i}`)
+                            .setLabel(`${option}`)
+                            .setStyle(ButtonStyle.Primary)
+                    );
+                }
+            }
+        
+            // 将按钮分配到 ActionRow 中
+            const actionRows = [];
+            const maxButtonsPerRow = 5; // 每行最多 5 个按钮
+            for (let i = 0; i < buttons.length; i += maxButtonsPerRow) {
+                const rowButtons = buttons.slice(i, i + maxButtonsPerRow);
+                actionRows.push(
+                    new ActionRowBuilder().addComponents(rowButtons)
+                );
+            }
+        
+            // 及时返回响应
+            return interaction.reply({
+                content: "Vote for a candidate:",
+                components: actionRows
+            });
+        }
+        
+        
+
         if (name === "send") {
             const amount = options.find(
                 (option) => option.name === "amount"
