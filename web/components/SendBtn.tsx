@@ -4,7 +4,7 @@ import { useSendTransaction, useAccount } from "wagmi";
 import { parseEther } from "viem";
 
 export default function SendBtn({ params }: { params: { slug: string } }) {
-    const { isDisconnected } = useAccount();
+    const { isDisconnected, chain } = useAccount();
     const [message, setMessage] = useState("");
 
     async function submit() {
@@ -25,6 +25,7 @@ export default function SendBtn({ params }: { params: { slug: string } }) {
             const body = {
                 sendautolink: `${params.slug}`,
                 transactionHash: tx,
+                network: chain?.name,
             };
             {
                 const response = await fetch(`/api/send`, {
