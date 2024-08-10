@@ -55,6 +55,18 @@ const FAUCET_COMMAND = {
     type: 1,
 };
 
+const SENDER_COMMAND = {
+    name: 'sender',
+    description: 'Get the receipt of a transaction',
+    type: 1,
+  };
+  
+  const RECEIVER_COMMAND = {
+    name: 'receiver',
+    description: 'Get the receipt of a transaction',
+    type: 1,
+  };
+
 // Update command list
 const ALL_COMMANDS = [
     TEST_COMMAND,
@@ -62,6 +74,8 @@ const ALL_COMMANDS = [
     SEND_COMMAND,
     CHECK_COMMAND,
     FAUCET_COMMAND,
+    SENDER_COMMAND,
+    RECEIVER_COMMAND,
 ];
 
 // Install commands
