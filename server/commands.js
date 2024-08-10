@@ -54,6 +54,47 @@ const FAUCET_COMMAND = {
     description: "Get some test tokens",
     type: 1,
 };
+// 生成选项数组
+const generateOptions = (numOptions) => {
+    const options = [];
+    for (let i = 1; i <= numOptions; i++) {
+        options.push({
+            type: 3, // STRING
+            name: `option${i}`,
+            description: `Option ${i}`,
+            required: false,
+        });
+    }
+    return options;
+};
+
+// 生成 10 个选项
+const numOptions = 10;
+const optionsArray = generateOptions(numOptions);
+
+// 定义 VOTE_COMMAND 对象
+const VOTE_COMMAND = {
+    name: "vote",
+    description: "Vote for a candidate",
+    type: 1, // CHAT_INPUT
+    options: optionsArray,
+};
+
+console.log(VOTE_COMMAND);
+
+const SENDER_COMMAND = {
+    name: 'sender',
+    description: 'Get the receipt of a transaction',
+    type: 1,
+  };
+  
+  const RECEIVER_COMMAND = {
+    name: 'receiver',
+    description: 'Get the receipt of a transaction',
+    type: 1,
+  };
+
+
 
 // Update command list
 const ALL_COMMANDS = [
@@ -62,6 +103,9 @@ const ALL_COMMANDS = [
     SEND_COMMAND,
     CHECK_COMMAND,
     FAUCET_COMMAND,
+    VOTE_COMMAND,
+    SENDER_COMMAND,
+    RECEIVER_COMMAND,
 ];
 
 // Install commands

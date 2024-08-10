@@ -11,12 +11,17 @@ import subscribersRouter from "./routes/subscribers.js";
 import userlink from "./models/userlink.js";
 import userlinksRouter from "./routes/userlinks.js";
 import sendlink from "./models/sendlink.js";
+import createlink from "./models/createlink.js";
+import votelink from "./models/votelink.js";
 import {
     ButtonBuilder,
     ButtonStyle,
     ActionRowBuilder,
     Client,
     GatewayIntentBits,
+    REST,
+    Routes,
+    EmbedBuilder,
 } from "discord.js";
 import { NETWORKS } from "./network.js";
 
@@ -28,8 +33,12 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.DirectMessages,
         GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildIntegrations,
     ],
 });
+
+
 
 const sendLinkChangeStream = sendlink.watch([
     { $match: { operationType: "update" } },
@@ -92,13 +101,14 @@ app.get("/", (req, res) => res.send("Express on Vercel"));
 
 app.post("/interactions", async (req, res) => {
     const { type, data, member, user } = req.body;
+    const { name, options, custom_id } = data;
+
 
     if (type === InteractionType.PING) {
         return res.send({ type: InteractionResponseType.PONG });
     }
 
     if (type === InteractionType.APPLICATION_COMMAND) {
-        const { name, options } = data;
         const userId = member?.user?.id || user?.id;
 
         if (name === "test") {
@@ -207,6 +217,74 @@ app.post("/interactions", async (req, res) => {
                 });
             }
         }
+
+        if (name === "vote") {
+            const sessionId = Math.random().toString(36).substring(2, 15);
+            const timestamp = new Date();
+        
+            // 收集所有选项值并存储为数组
+            const optionArray = [];
+            for (let i = 1; i <= 10; i++) { // 假设最多有 10 个选项
+                const option = options.find(
+                    (opt) => opt.name === `option${i}`
+                )?.value;
+        
+                if (option !== undefined) {
+                    optionArray.push(option);
+                }
+            }
+        
+            const newcreateLink = new createlink({
+                user: userId,
+                votelink: sessionId,
+                generateTIME: timestamp,
+                option: optionArray, // 将选项存储为数组
+            });
+        
+            // 保存投票链接到数据库
+            // // 生成选项按钮数组
+            // const buttons = [];
+            // for (let i = 0; i < optionArray.length; i++) {
+            //     buttons.push(
+            //         new ButtonBuilder()
+            //             .setCustomId(`candidate${i + 1}-${sessionId}`)
+            //             .setLabel(`${optionArray[i]}`)
+            //             .setStyle(ButtonStyle.Primary)
+            //     );
+            // }
+        
+            // // 将按钮分配到 ActionRow 中
+            // const actionRows = [];
+            // const maxButtonsPerRow = 5; // 每行最多 5 个按钮
+            // for (let i = 0; i < buttons.length; i += maxButtonsPerRow) {
+            //     const rowButtons = buttons.slice(i, i + maxButtonsPerRow);
+            //     actionRows.push(
+            //         new ActionRowBuilder().addComponents(rowButtons)
+            //     );
+            // }
+        
+            // 返回响应
+            const buttons = [
+                new ButtonBuilder()
+                    .setLabel("Connect 🔁")
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(`https://century-pay-web.vercel.app/vote/${sessionId}`)
+            ];
+        
+            // 将按钮分配到 ActionRow 中
+            const actionRow = new ActionRowBuilder().addComponents(buttons);
+        
+            // 返回响应
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `Please connect:`,
+                    components: [actionRow],
+                },
+            });
+        }
+        
+
 
         if (name === "send") {
             const amount = options.find(
@@ -317,7 +395,6 @@ app.post("/interactions", async (req, res) => {
     }
     if (type === InteractionType.MESSAGE_COMPONENT) {
         // custom_id set in payload when sending message component
-        const { name, options, custom_id } = data;
         const userId = member?.user?.id || user?.id;
 
         if (custom_id === "Sepolia") {
