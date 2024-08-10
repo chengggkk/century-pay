@@ -1,54 +1,45 @@
 "use client";
 
 import { useAuthenticate, useSignerStatus } from "@alchemy/aa-alchemy/react";
-import { FormEvent, useCallback, useState } from "react";
-import { Button } from "./ui/button";
-import { Card } from "./ui/card";
-import { Input } from "./ui/input";
 
 export const LogInCard = () => {
-    const [email, setEmail] = useState<string>("");
-    const onEmailChange = useCallback(
-        (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value),
-        []
-    );
     // [!region authenticating]
     const { authenticate } = useAuthenticate();
-    const login = (evt: FormEvent<HTMLFormElement>) => {
-        evt.preventDefault();
+    async function signup() {
         authenticate({
             type: "passkey",
             createNew: true,
             username: "Century Pay",
         });
-    };
+    }
+
+    async function login() {
+        authenticate({
+            type: "passkey",
+            createNew: false,
+        });
+    }
 
     const { status } = useSignerStatus();
-    const isAwaitingEmail = status === "AWAITING_EMAIL_AUTH";
+    const isAuthenticating = status === "AUTHENTICATING";
     // [!endregion authenticating]
 
     return (
-        <Card>
-            {isAwaitingEmail ? (
-                <div className="text-[18px] font-semibold">
-                    Check your email!
-                </div>
-            ) : (
-                <form className="flex flex-col gap-8" onSubmit={login}>
-                    <div className="text-[18px] font-semibold">
-                        Log in to the Embedded Accounts Demo!
-                    </div>
-                    <div className="flex flex-col justify-between gap-6">
-                        <Input
-                            type="email"
-                            placeholder="Enter your email"
-                            value={email}
-                            onChange={onEmailChange}
-                        />
-                        <Button type="submit">Log in</Button>
-                    </div>
-                </form>
-            )}
-        </Card>
+        <div className="flex flex-col items-center justify-center min-h-screen">
+            <button
+                className="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg transition duration-200 ease-in-out transform hover:scale-105"
+                disabled={isAuthenticating}
+                onClick={signup}
+            >
+                {isAuthenticating ? "Confirming..." : "Sign Up"}
+            </button>
+            <button
+                className="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg transition duration-200 ease-in-out transform hover:scale-105"
+                disabled={isAuthenticating}
+                onClick={login}
+            >
+                {isAuthenticating ? "Confirming..." : "Log In"}
+            </button>
+        </div>
     );
 };

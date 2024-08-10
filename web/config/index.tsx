@@ -22,7 +22,7 @@ const metadata = {
     name: "Century Pay",
     description: "A discord bot that makes onchain payments easy",
     url: "https://github.com/chengggkk/century-pay", // origin must match your domain & subdomain
-    icons: ["https://avatars.githubusercontent.com/u/153604637"],
+    icons: ["https://i.imgur.com/QYfsdUE.png"],
 };
 
 // Create wagmiConfig

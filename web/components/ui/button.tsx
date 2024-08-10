@@ -9,7 +9,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantLookup = {
   default: "bg-[#363FF9] text-[#FBFDFF]",
-  secondary: "border border-black dark:bg-slate-600",
+  secondary: "border border-white dark:bg-slate-600",
 };
 
 export const Button = ({
