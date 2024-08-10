@@ -17,6 +17,8 @@ import {
     ActionRowBuilder,
     Client,
     GatewayIntentBits,
+    REST,
+    Routes,
 } from "discord.js";
 import { NETWORKS } from "./network.js";
 
@@ -237,12 +239,16 @@ app.post("/interactions", async (req, res) => {
                 );
             }
         
-            // 及时返回响应
-            return interaction.reply({
-                content: "Vote for a candidate:",
-                components: actionRows
+            // 返回响应
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: "Vote for a candidate:",
+                    components: actionRows,
+                },
             });
         }
+        
         
         
 
