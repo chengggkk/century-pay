@@ -15,22 +15,22 @@ export const metadata: Metadata = {
 
 // [!region root-layout]
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  // hydrate the initial state on the client
-  const initialState = cookieToInitialState(
-    config,
-    headers().get("cookie") ?? undefined,
-  );
+    // hydrate the initial state on the client
+    const initialState = cookieToInitialState(
+        config,
+        headers().get("cookie") ?? undefined
+    );
 
-  return (
-    <html lang="en">
-      <body className={inter.className}>
-        <Providers initialState={initialState}>{children}</Providers>
-      </body>
-    </html>
-  );
+    return (
+        <html lang="en">
+            <body className={inter.className}>
+                <Providers initialState={initialState}>{children}</Providers>
+            </body>
+        </html>
+    );
 }
 // [!endregion root-layout]

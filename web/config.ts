@@ -7,13 +7,13 @@ import {
 } from "@alchemy/aa-alchemy/config";
 import {
   SmartAccountClientOptsSchema,
-  arbitrumSepolia,
+  optimismSepolia
 } from "@alchemy/aa-core";
 import { QueryClient } from "@tanstack/react-query";
 
 // [!region create-accounts-config]
 // NOTE: feel free to change the chain here!
-export const chain = arbitrumSepolia;
+export const chain = optimismSepolia;
 export const config = createConfig({
   // this is for requests to the specific chain RPC
   rpcUrl: "/api/rpc/chain/" + chain.id,
