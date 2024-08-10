@@ -62,7 +62,7 @@ const generateOptions = (numOptions) => {
             type: 3, // STRING
             name: `option${i}`,
             description: `Option ${i}`,
-            required: true,
+            required: false,
         });
     }
     return options;
@@ -82,6 +82,18 @@ const VOTE_COMMAND = {
 
 console.log(VOTE_COMMAND);
 
+const SENDER_COMMAND = {
+    name: 'sender',
+    description: 'Get the receipt of a transaction',
+    type: 1,
+  };
+  
+  const RECEIVER_COMMAND = {
+    name: 'receiver',
+    description: 'Get the receipt of a transaction',
+    type: 1,
+  };
+
 
 
 // Update command list
@@ -92,6 +104,8 @@ const ALL_COMMANDS = [
     CHECK_COMMAND,
     FAUCET_COMMAND,
     VOTE_COMMAND,
+    SENDER_COMMAND,
+    RECEIVER_COMMAND,
 ];
 
 // Install commands

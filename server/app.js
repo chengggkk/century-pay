@@ -19,6 +19,7 @@ import {
     GatewayIntentBits,
     REST,
     Routes,
+    EmbedBuilder,
 } from "discord.js";
 import { NETWORKS } from "./network.js";
 
@@ -30,8 +31,12 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.DirectMessages,
         GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildIntegrations,
     ],
 });
+
+
 
 const sendLinkChangeStream = sendlink.watch([
     { $match: { operationType: "update" } },
@@ -94,13 +99,14 @@ app.get("/", (req, res) => res.send("Express on Vercel"));
 
 app.post("/interactions", async (req, res) => {
     const { type, data, member, user } = req.body;
+    const { name, options, custom_id } = data;
+
 
     if (type === InteractionType.PING) {
         return res.send({ type: InteractionResponseType.PONG });
     }
 
     if (type === InteractionType.APPLICATION_COMMAND) {
-        const { name, options } = data;
         const userId = member?.user?.id || user?.id;
 
         if (name === "test") {
@@ -217,7 +223,7 @@ app.post("/interactions", async (req, res) => {
                 const option = options.find(
                     (opt) => opt.name === `option${i}`
                 )?.value;
-        
+
                 // 只在 option 不为 undefined 的情况下创建按钮
                 if (option !== undefined) {
                     buttons.push(
@@ -228,7 +234,7 @@ app.post("/interactions", async (req, res) => {
                     );
                 }
             }
-        
+
             // 将按钮分配到 ActionRow 中
             const actionRows = [];
             const maxButtonsPerRow = 5; // 每行最多 5 个按钮
@@ -238,7 +244,7 @@ app.post("/interactions", async (req, res) => {
                     new ActionRowBuilder().addComponents(rowButtons)
                 );
             }
-        
+
             // 返回响应
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -248,9 +254,7 @@ app.post("/interactions", async (req, res) => {
                 },
             });
         }
-        
-        
-        
+
 
         if (name === "send") {
             const amount = options.find(
@@ -361,7 +365,6 @@ app.post("/interactions", async (req, res) => {
     }
     if (type === InteractionType.MESSAGE_COMPONENT) {
         // custom_id set in payload when sending message component
-        const { name, options, custom_id } = data;
         const userId = member?.user?.id || user?.id;
 
         if (custom_id === "Sepolia") {
