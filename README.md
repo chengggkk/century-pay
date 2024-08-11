@@ -57,14 +57,13 @@ Thanks to the integration with **AA wallets**, on-chain interactions have never 
     ![faucet](./assets/cp-faucet.gif)
 
 ### `/sender`
--   Description: Get all of the result of transactions of sending money and give users a blockscout link to check the transaction.
+
+-   Description: Get all of the result of transactions for sending money and give users a blockscout link to check the transaction.
 -    ![faucet](./assets/cp-faucet.gif)
 
 ### `/receiver`
 
-### `/sender`
-
-- Description: Get all the results of transactions for sending money and provide users with a Blockscout link to check the transaction.
+- Description: Get all the results of transactions for getting money and provide users with a Blockscout link to check the transaction.
 - ![faucet](./assets/cp-faucet.gif)
 
 
