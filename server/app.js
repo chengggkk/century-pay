@@ -38,8 +38,6 @@ const client = new Client({
     ],
 });
 
-
-
 const sendLinkChangeStream = sendlink.watch([
     { $match: { operationType: "update" } },
 ]);
@@ -102,7 +100,6 @@ app.get("/", (req, res) => res.send("Express on Vercel"));
 app.post("/interactions", async (req, res) => {
     const { type, data, member, user } = req.body;
     const { name, options, custom_id } = data;
-
 
     if (type === InteractionType.PING) {
         return res.send({ type: InteractionResponseType.PONG });
@@ -219,34 +216,37 @@ app.post("/interactions", async (req, res) => {
         }
 
         if (name === "createvote") {
-            console.log('Channel ID:', data.id);
+            console.log("Channel ID:", data.id);
 
             const sessionId = Math.random().toString(36).substring(2, 15);
             const timestamp = new Date();
             const channelID = data.id;
-        
+
             // 收集所有选项值并存储为数组
             const optionArray = [];
-            for (let i = 1; i <= 10; i++) { // 假设最多有 10 个选项
+            const topic = options.find((opt) => opt.name === `topic`)?.value;
+            for (let i = 1; i <= 10; i++) {
+                // 假设最多有 10 个选项
                 const option = options.find(
                     (opt) => opt.name === `option${i}`
                 )?.value;
-        
+
                 if (option !== undefined) {
                     optionArray.push(option);
                 }
             }
-        
+
             const newcreateLink = new createlink({
                 user: userId,
                 createlink: sessionId,
                 generateTIME: timestamp,
                 option: optionArray, // 将选项存储为数组
                 channelId: channelID,
+                topic: topic,
             });
 
             await newcreateLink.save();
-        
+
             // 保存投票链接到数据库
             // // 生成选项按钮数组
             // const buttons = [];
@@ -258,7 +258,7 @@ app.post("/interactions", async (req, res) => {
             //             .setStyle(ButtonStyle.Primary)
             //     );
             // }
-        
+
             // // 将按钮分配到 ActionRow 中
             // const actionRows = [];
             // const maxButtonsPerRow = 5; // 每行最多 5 个按钮
@@ -268,18 +268,20 @@ app.post("/interactions", async (req, res) => {
             //         new ActionRowBuilder().addComponents(rowButtons)
             //     );
             // }
-        
+
             // 返回响应
             const buttons = [
                 new ButtonBuilder()
                     .setLabel("Connect 🔁")
                     .setStyle(ButtonStyle.Link)
-                    .setURL(`https://century-pay-web.vercel.app/create/${sessionId}`)
+                    .setURL(
+                        `https://century-pay-web.vercel.app/create/${sessionId}`
+                    ),
             ];
-        
+
             // 将按钮分配到 ActionRow 中
             const actionRow = new ActionRowBuilder().addComponents(buttons);
-        
+
             // 返回响应
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -290,8 +292,6 @@ app.post("/interactions", async (req, res) => {
                 },
             });
         }
-        
-
 
         if (name === "send") {
             const amount = options.find(
