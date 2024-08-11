@@ -15,7 +15,7 @@ const createlinkSchema = new mongoose.Schema({
         default: Date.now
     },
     option: {
-        type: [String], 
+        type: [[String]], // 如果需要雙維陣列，每個元素為字串
         default: [] 
     },
     channelId: {

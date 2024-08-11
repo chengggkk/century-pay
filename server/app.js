@@ -275,8 +275,8 @@ app.post("/interactions", async (req, res) => {
                             return {
                                 name: `Amount: ${trx.amount}`,
                                 value: name === 'sender'
-                                ? `**Receiver Address:** ${trx.to_address}\n**Time:** ${formattedTime} (Eastern Time)\n[blockscout🔗](https://eth-sepolia.blockscout.com/tx/${trx.transactionHash})`
-                                : `**Sender Address:** ${senderAddress}\n**Time:** ${formattedTime} (Eastern Time)\n[blockscout🔗](https://eth-sepolia.blockscout.com/tx/${trx.transactionHash})`,
+                                    ? `**Receiver Address:** ${trx.to_address}\n**Time:** ${formattedTime} (Eastern Time)\n[blockscout🔗](https://eth-sepolia.blockscout.com/tx/${trx.transactionHash})`
+                                    : `**Sender Address:** ${senderAddress}\n**Time:** ${formattedTime} (Eastern Time)\n[blockscout🔗](https://eth-sepolia.blockscout.com/tx/${trx.transactionHash})`,
                                 inline: false
                             };
                         }))
@@ -314,6 +314,9 @@ app.post("/interactions", async (req, res) => {
                 return res.send(response);
             }
         }
+
+
+
 
         if (name === "connect") {
             const sessionId = Math.random().toString(36).substring(2, 15);
@@ -364,28 +367,34 @@ app.post("/interactions", async (req, res) => {
 
             // 收集所有选项值并存储为数组
             const optionArray = [];
-            const topic = options.find((opt) => opt.name === `topic`)?.value;
+            const topic = options.find((opt) => opt.name === 'topic')?.value;
+            
             for (let i = 1; i <= 10; i++) {
-                // 假设最多有 10 个选项
-                const option = options.find(
-                    (opt) => opt.name === `option${i}`
-                )?.value;
-
-                if (option !== undefined) {
-                    optionArray.push(option);
+                const option = options.find((opt) => opt.name === `option${i}`)?.value;
+            
+                if (option) {
+                    const [first, second] = option.split(':');
+                    if (second !== undefined) {
+                        optionArray.push([first, second]);
+                    }
                 }
             }
-
+            
+            console.log(optionArray);
+            
             const newcreateLink = new createlink({
                 user: userId,
                 createlink: sessionId,
                 generateTIME: timestamp,
-                option: optionArray, // 将选项存储为数组
+                option: optionArray, // 確保這裡是二維陣列
                 channelId: channelID,
                 topic: topic,
             });
-
-            await newcreateLink.save();
+            
+            newcreateLink.save()
+                .then(() => console.log('Link saved successfully'))
+                .catch(err => console.error('Error saving link:', err));
+            
 
             // 保存投票链接到数据库
             // // 生成选项按钮数组
