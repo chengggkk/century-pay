@@ -58,20 +58,19 @@ Thanks to the integration with **AA wallets**, on-chain interactions have never 
 -   Description: It automatically sends some ETH (0.001 ETH) to the user's wallet if the user has connected to an address.
 -   Options: `Sepolia`, `OptimismSepolia`, `BaseSepolia`
 
-   ![faucet](./assets/cp-faucet.gif)
+    ![faucet](./assets/cp-faucet.gif)
 
 ### `/sender`
 
 -   Description: Get all of the result of transactions for sending money and give users a blockscout link to check the transaction.
 
-    ![faucet](./assets/cp-faucet.gif)
+    ![sender](./assets/cp-sender.gif)
 
 ### `/receiver`
 
-- Description: Get all the results of transactions for getting money and provide users with a Blockscout link to check the transaction.
+-   Description: Get all the results of transactions for getting money and provide users with a Blockscout link to check the transaction.
 
- ![faucet](./assets/cp-faucet.gif)
-
+    ![receiver](./assets/cp-receiver.gif)
 
 ### `/createVote`
 
@@ -208,10 +207,10 @@ vercel --prod # for prod
     -   Discord only supports text, button, links... in the chatroom, and it _cannot perform computation_ before sending commands. We cannot connect to a secured wallet in the discord app. If Discord can support javascript computation in chatroom, we don't need to redirect users to frontend wallet website.
 
 -   **Purchase and exchange tokens**
+
     -   We can connect like Apple pay to let users buy tokens within Discord
     -   And users can exchange assets within Discord
 
 -   **Automated Prize Distribution for Voting Events**
-    - The bot will have the capability to automatically distribute prizes to the winners of voting events. This functionality combines the voting and payment processes, allowing for seamless prize distribution.
-        
+    -   The bot will have the capability to automatically distribute prizes to the winners of voting events. This functionality combines the voting and payment processes, allowing for seamless prize distribution.
         For example, during a hackathon, judges can vote for their favorite project, and the winner will receive the prize automatically after the event concludes.
