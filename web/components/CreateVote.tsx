@@ -15,6 +15,7 @@ import {
 } from "../config";
 import { Button } from "./ui/button";
 import { encodeFunctionData, Hex } from "viem";
+import VoteABI from "../../contracts/artifacts/contracts/VoteExample.sol/VoteExample.json";
 
 export const CreateVote = ({ params }: { params: { slug: string } }) => {
     const user = useUser();
@@ -55,6 +56,11 @@ export const CreateVote = ({ params }: { params: { slug: string } }) => {
         setMessage("Loading...");
         // collect all the form values from the user input
         const target = "0xF4205f466De67CA37d820504eb3c81bb89081214" as Hex;
+        const voteId = await client?.readContract({
+            address: target,
+            abi: VoteABI.abi,
+            functionName: "voteId",
+        });
         const AlchemyTokenAbi = [
             {
                 inputs: [
@@ -96,6 +102,7 @@ export const CreateVote = ({ params }: { params: { slug: string } }) => {
                 autolink: `${params.slug}`,
                 transactionHash: res.hash,
                 network: "OP Sepolia",
+                voteId: voteId?.toString(),
             };
 
             const postResponse = await fetch("/api/create", {

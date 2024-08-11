@@ -17,11 +17,12 @@ import { Button } from "./ui/button";
 import { encodeFunctionData, Hex } from "viem";
 import { OpStatus } from "./op-status";
 
-export const Vote = () => {
+export const Vote = ({ params }: { params: { slug: string } }) => {
     const user = useUser();
     const { address } = useAccount({ type: accountType });
     const { logout } = useLogout();
     const [sending, setSending] = useState(false);
+    const [message, setMessage] = useState("");
 
     // [!region sending-user-op]
     // use config values to initialize our smart account client
@@ -35,6 +36,7 @@ export const Vote = () => {
     // this hook provides us with a status, error, and a result
     const {
         sendUserOperation,
+        sendUserOperationAsync,
         sendUserOperationResult,
         isSendingUserOperation,
         error: isSendUserOperationError,
@@ -49,8 +51,9 @@ export const Vote = () => {
         return `${firstPart}...${lastPart}`;
     }
 
-    const send = () => {
+    async function send() {
         setSending(true);
+        setMessage("Loading...");
         // collect all the form values from the user input
         const target = "0xF4205f466De67CA37d820504eb3c81bb89081214" as Hex;
         const AlchemyTokenAbi = [
@@ -73,29 +76,55 @@ export const Vote = () => {
                 type: "function",
             },
         ];
-        // TODO: fix this
-        const id = BigInt(0);
-        const option = BigInt(0);
-        const data = encodeFunctionData({
-            abi: AlchemyTokenAbi,
-            functionName: "vote",
-            args: [id, option],
-        });
+        try {
+            const response = await fetch(`/api/vote?autolink=${params.slug}`, {
+                method: "GET", // Specify the request method
+            });
+            const json = await response.json();
+            const choice = JSON.parse(json).choice;
+            const voteId = JSON.parse(json).voteId;
 
-        // send the user operation
-        sendUserOperation({
-            uo: { target, data, value: BigInt(0) },
-        });
-    };
+            const data = encodeFunctionData({
+                abi: AlchemyTokenAbi,
+                functionName: "vote",
+                args: [BigInt(voteId), BigInt(choice)],
+            });
+
+            // send the user operation
+            const res = await sendUserOperationAsync({
+                uo: { target, data, value: BigInt(0) },
+            });
+
+            const body = {
+                autolink: `${params.slug}`,
+                transactionHash: res.hash,
+                network: "OP Sepolia",
+                voteId: voteId?.toString(),
+            };
+
+            const postResponse = await fetch("/api/vote", {
+                method: "POST", // Specify the request method
+                headers: {
+                    "Content-Type": "application/json", // Set the Content-Type header
+                },
+                body: JSON.stringify(body), // Convert the data to a JSON string
+            });
+
+            if (postResponse.ok) {
+                setMessage("✅\nYou may now close the window");
+            } else {
+                const json = await postResponse.json();
+                setMessage(`❌\nAn error occurred ${json.error}`);
+            }
+        } catch (error) {
+            console.error(error);
+            setMessage(`❌\nAn error occurred ${error}`);
+        }
+    }
     // [!endregion sending-user-op]
 
     return (
         <>
-            <OpStatus
-                sendUserOperationResult={sendUserOperationResult}
-                isSendingUserOperation={isSendingUserOperation}
-                isSendUserOperationError={isSendUserOperationError}
-            />
             {!sending && (
                 <div className="flex flex-col items-start gap-4 p-4">
                     <div className="flex items-center gap-2">
@@ -121,6 +150,11 @@ export const Vote = () => {
                         Logout
                     </Button>
                 </div>
+            )}
+            {sending && (
+                <>
+                    <h2 className="text-white">{message}</h2>
+                </>
             )}
         </>
     );

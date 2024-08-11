@@ -1,12 +1,12 @@
 "use client";
 
-import { LogInCard } from "../../components/login-card";
-import { Vote } from "../../components/Vote";
-import { LoadingSpinner } from "../../components/ui/loading-spinner";
+import { LogInCard } from "../../../components/login-card";
+import { Vote } from "../../../components/Vote";
+import { LoadingSpinner } from "../../../components/ui/loading-spinner";
 import { useSignerStatus } from "@alchemy/aa-alchemy/react";
 
 // [!region using-status]
-export default function Home() {
+export default function Home({ params }: { params: { slug: string } }) {
     // use the various signer statuses to determine if we are:
     // loading - waiting for a request to resolve
     // connected - the user signed in with an email tied to a smart account
@@ -22,7 +22,7 @@ export default function Home() {
             {isLoading ? (
                 <LoadingSpinner />
             ) : isConnected ? (
-                <Vote />
+                <Vote params={params} />
             ) : (
                 <LogInCard />
             )}

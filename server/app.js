@@ -302,6 +302,7 @@ app.post("/interactions", async (req, res) => {
                 topic: { $ne: null },
                 transactionHash: { $ne: null },
                 network: { $ne: null },
+                voteId: { $ne: null },
             });
             const options = [];
             for (let i = 0; i < validVoteLists.length; i++) {
@@ -498,7 +499,7 @@ app.post("/interactions", async (req, res) => {
             const timestamp = new Date();
             const sessionId = Math.random().toString(36).substring(2, 15);
             // TODO: get voteID from vote
-            const onchainVoteId = 0;
+            const onchainVoteId = vote.voteId;
             const newVoteLink = new votelink({
                 user: userId,
                 votelink: sessionId,
