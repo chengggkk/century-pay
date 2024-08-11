@@ -21,7 +21,13 @@ const createlinkSchema = new mongoose.Schema({
     channelId: {
         type: String,
         required: true
-    }
+    },
+    transactionHash: {
+        type: String,
+    },
+    network: {
+        type: String,
+    },
 });
 
 

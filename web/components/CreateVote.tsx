@@ -88,13 +88,13 @@ export const CreateVote = ({ params }: { params: { slug: string } }) => {
             });
 
             // send the user operation
-            await sendUserOperationAsync({
+            const res = await sendUserOperationAsync({
                 uo: { target, data, value: BigInt(0) },
             });
 
             const body = {
                 autolink: `${params.slug}`,
-                transactionHash: sendUserOperationResult?.hash,
+                transactionHash: res.hash,
                 network: "OP Sepolia",
             };
 
