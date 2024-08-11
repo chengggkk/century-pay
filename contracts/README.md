@@ -1,13 +1,34 @@
-# Sample Hardhat Project
+# Example Voting Smart Contract
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+The example voting smart contract showcases the potential of Century Pay. It allows users to use an smart contract account to interact with the voting without paying gas fee (it will be sponsored by paymaster).
 
-Try running some of the following tasks:
+## Deployments
+
+-   OP Mainnet: [0xf4205f466de67ca37d820504eb3c81bb89081214](https://optimism.blockscout.com/address/0xf4205f466de67ca37d820504eb3c81bb89081214)
+-   OP Sepolia: [0xF4205f466De67CA37d820504eb3c81bb89081214](https://optimism-sepolia.blockscout.com/address/0xF4205f466De67CA37d820504eb3c81bb89081214)
+-   Base Sepolia: [0x8f323fb65d88e327e67a2c4076401126d2a2fbeb](https://base-sepolia.blockscout.com/address/0x8f323fb65d88e327e67a2c4076401126d2a2fbeb)
+-   Metal L2 Testnet: [0x37b31ca71bb33b149f56b6674486e5ed4365e9af](https://testnet.explorer.metall2.com/address/0x37b31ca71bb33b149f56b6674486e5ed4365e9af)
+
+## Installation
 
 ```shell
-npx hardhat help
+npm install
+```
+
+## Test
+
+```shell
 npx hardhat test
-REPORT_GAS=true npx hardhat test
+```
+
+## Local node
+
+```shell
 npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/Lock.ts
+```
+
+## Deploy
+
+```shell
+npx hardhat ignition deploy ./ignition/modules/VoteExample.ts
 ```

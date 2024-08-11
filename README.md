@@ -63,6 +63,53 @@ Thanks to the integration with **AA wallets**, on-chain interactions have never 
 ### `/receiver`
 -   Description: Get all of the result of transactions of sending money and give users a blockscout link to check the transaction.
     ![faucet](./assets/cp-faucet.gif)
+    
+### `/createVote`
+
+-   Description: It enables each user to create a vote session and everyone can join the vote by an AA wallet.
+-   Inputs
+
+    -   `topic`: `string`
+        -   The topic to be voted for
+    -   `option1`,...,`option10`: `string`
+        -   The candidates of the vote
+        -   min: 2, max: 10
+
+    ![create](./assets/cp-create.gif)
+
+### `/vote`
+
+-   Description: It allows users to find which vote session is happening, and users can vote for the specified session. After users choose an option, the bot redirects users to confirm the vote with an AA wallet.
+-   Selectors
+
+    -   `topic`
+        -   The topic of the vote
+    -   `option`
+        -   The option of the vote
+
+    ![vote](./assets/cp-vote.gif)
+
+### `/tally`
+
+-   Description: Users can close the vote session with the tally command. It also redirects the user to connect an AA account to confirm the transaction.
+    ![tally](./assets/cp-tally.gif)
+
+### `/result`
+
+-   Description: Users can view the result of every finished vote session.
+-   Selectors
+
+    -   `topic` - The topic of the vote
+
+    ![result](./assets/cp-result.gif)
+
+## Authentication
+
+The wallet authentication should be connected through an embedd frontend framework. Here is an example of using **Alchemy Embedded Account** through **Passkey** authentication.
+
+<p align="center">
+<img width="200" src="./assets/cp-auth.gif">
+</p>
 
 ## Installation
 

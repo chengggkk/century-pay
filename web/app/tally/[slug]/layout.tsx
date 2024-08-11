@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "../globals.css";
+import "../../globals.css";
 import { Providers } from "./providers";
 import { cookieToInitialState } from "@alchemy/aa-alchemy/config";
 import { headers } from "next/headers";
-import { config } from "../../config";
+import { config } from "../../../config";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Century Pay",
-  description: "A discord bot that makes onchain payments easy",
+    title: "Century Pay",
+    description: "A discord bot that makes onchain payments easy",
 };
 
 // [!region root-layout]
