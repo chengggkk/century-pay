@@ -58,12 +58,16 @@ Thanks to the integration with **AA wallets**, on-chain interactions have never 
 
 ### `/sender`
 -   Description: Get all of the result of transactions of sending money and give users a blockscout link to check the transaction.
-    ![faucet](./assets/cp-faucet.gif)
+-    ![faucet](./assets/cp-faucet.gif)
 
 ### `/receiver`
--   Description: Get all of the result of transactions of sending money and give users a blockscout link to check the transaction.
-    ![faucet](./assets/cp-faucet.gif)
-    
+
+### `/sender`
+
+- Description: Get all the results of transactions for sending money and provide users with a Blockscout link to check the transaction.
+- ![faucet](./assets/cp-faucet.gif)
+
+
 ### `/createVote`
 
 -   Description: It enables each user to create a vote session and everyone can join the vote by an AA wallet.
