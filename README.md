@@ -56,6 +56,14 @@ Thanks to the integration with **AA wallets**, on-chain interactions have never 
 -   Options: `Sepolia`, `OptimismSepolia`, `BaseSepolia`
     ![faucet](./assets/cp-faucet.gif)
 
+### `/sender`
+-   Description: Get all of the result of transactions of sending money and give users a blockscout link to check the transaction.
+    ![faucet](./assets/cp-faucet.gif)
+
+### `/receiver`
+-   Description: Get all of the result of transactions of sending money and give users a blockscout link to check the transaction.
+    ![faucet](./assets/cp-faucet.gif)
+
 ## Installation
 
 ### [📄 contracts](./contracts):
