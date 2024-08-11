@@ -114,6 +114,8 @@ app.post("/interactions", async (req, res) => {
     if (type === InteractionType.APPLICATION_COMMAND) {
         const { name, options, custom_id } = data;
         const userId = member?.user?.id || user?.id;
+        const { name, options, custom_id } = data;
+
 
         if (name === "test") {
             return res.send({
