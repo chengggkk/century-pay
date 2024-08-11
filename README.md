@@ -50,7 +50,8 @@ Thanks to the integration with **AA wallets**, on-chain interactions have never 
         -   Either an Ethereum account or tag a user
         -   e.g. `0x123...` or `@vivi432`
 -   After a transaction is sent, it notifies both sender and receiver with a private chat message.
--    ![send](./assets/cp-send.gif)
+
+    ![send](./assets/cp-send.gif)
 
 ### `/faucet`
 
@@ -100,6 +101,7 @@ Thanks to the integration with **AA wallets**, on-chain interactions have never 
 ### `/tally`
 
 -   Description: Users can close the vote session with the tally command. It also redirects the user to connect an AA account to confirm the transaction.
+
     ![tally](./assets/cp-tally.gif)
 
 ### `/result`
