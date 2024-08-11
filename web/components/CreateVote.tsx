@@ -15,13 +15,13 @@ import {
 } from "../config";
 import { Button } from "./ui/button";
 import { encodeFunctionData, Hex } from "viem";
-import { OpStatus } from "./op-status";
 
-export const CreateVote = () => {
+export const CreateVote = ({ params }: { params: { slug: string } }) => {
     const user = useUser();
     const { address } = useAccount({ type: accountType });
     const { logout } = useLogout();
     const [sending, setSending] = useState(false);
+    const [message, setMessage] = useState("");
 
     // [!region sending-user-op]
     // use config values to initialize our smart account client
@@ -35,6 +35,7 @@ export const CreateVote = () => {
     // this hook provides us with a status, error, and a result
     const {
         sendUserOperation,
+        sendUserOperationAsync,
         sendUserOperationResult,
         isSendingUserOperation,
         error: isSendUserOperationError,
@@ -49,8 +50,9 @@ export const CreateVote = () => {
         return `${firstPart}...${lastPart}`;
     }
 
-    const send = () => {
+    async function send() {
         setSending(true);
+        setMessage("Loading...");
         // collect all the form values from the user input
         const target = "0xF4205f466De67CA37d820504eb3c81bb89081214" as Hex;
         const AlchemyTokenAbi = [
@@ -68,28 +70,57 @@ export const CreateVote = () => {
                 type: "function",
             },
         ];
-        // TODO: fix this
-        const optionsNum = BigInt(3);
-        const data = encodeFunctionData({
-            abi: AlchemyTokenAbi,
-            functionName: "createVote",
-            args: [optionsNum],
-        });
+        try {
+            const response = await fetch(
+                `/api/create?autolink=${params.slug}`,
+                {
+                    method: "GET", // Specify the request method
+                }
+            );
+            const json = await response.json();
+            const options = JSON.parse(json).option;
+            const optionsNum = BigInt(options.length);
 
-        // send the user operation
-        sendUserOperation({
-            uo: { target, data, value: BigInt(0) },
-        });
-    };
+            const data = encodeFunctionData({
+                abi: AlchemyTokenAbi,
+                functionName: "createVote",
+                args: [optionsNum],
+            });
+
+            // send the user operation
+            await sendUserOperationAsync({
+                uo: { target, data, value: BigInt(0) },
+            });
+
+            const body = {
+                autolink: `${params.slug}`,
+                transactionHash: sendUserOperationResult?.hash,
+                network: "OP Sepolia",
+            };
+
+            const postResponse = await fetch("/api/create", {
+                method: "POST", // Specify the request method
+                headers: {
+                    "Content-Type": "application/json", // Set the Content-Type header
+                },
+                body: JSON.stringify(body), // Convert the data to a JSON string
+            });
+
+            if (postResponse.ok) {
+                setMessage("✅\nYou may now close the window");
+            } else {
+                const json = await postResponse.json();
+                setMessage(`❌\nAn error occurred ${json.error}`);
+            }
+        } catch (error) {
+            console.error(error);
+            setMessage(`❌\nAn error occurred ${error}`);
+        }
+    }
     // [!endregion sending-user-op]
 
     return (
         <>
-            <OpStatus
-                sendUserOperationResult={sendUserOperationResult}
-                isSendingUserOperation={isSendingUserOperation}
-                isSendUserOperationError={isSendUserOperationError}
-            />
             {!sending && (
                 <div className="flex flex-col items-start gap-4 p-4">
                     <div className="flex items-center gap-2">
@@ -115,6 +146,11 @@ export const CreateVote = () => {
                         Logout
                     </Button>
                 </div>
+            )}
+            {sending && (
+                <>
+                    <h2 className="text-white">{message}</h2>
+                </>
             )}
         </>
     );
