@@ -21,9 +21,17 @@ const votelinkSchema = new mongoose.Schema({
     voteId: {
         type: String,
         required: true
-    }
+    },
+    transactionHash: {
+        type: String,
+    },
+    network: {
+        type: String,
+    },
 });
 
-const votelink = mongoose.model('votelink', votelinkSchema);
 
-export default votelink; // Ensure this line is present to export the userlink model as default
+const votelink = mongoose.models.votelink || mongoose.model('votelink', votelinkSchema);
+
+
+export default votelink; 

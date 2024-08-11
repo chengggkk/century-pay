@@ -57,7 +57,23 @@ const FAUCET_COMMAND = {
 // 生成选项数组
 const generateOptions = (numOptions) => {
     const options = [];
-    for (let i = 1; i <= numOptions; i++) {
+    // Add topic
+    options.push({
+        type: 3, // STRING
+        name: "topic",
+        description: "Topic of the vote",
+        required: true,
+    });
+    const requiredOptions = 2;
+    for (let i = 1; i <= requiredOptions; i++) {
+        options.push({
+            type: 3, // STRING
+            name: `option${i}`,
+            description: `Option ${i}`,
+            required: true,
+        });
+    }
+    for (let i = requiredOptions + 1; i <= numOptions; i++) {
         options.push({
             type: 3, // STRING
             name: `option${i}`,
@@ -73,28 +89,37 @@ const numOptions = 10;
 const optionsArray = generateOptions(numOptions);
 
 // 定义 VOTE_COMMAND 对象
-const VOTE_COMMAND = {
+const CREATE_VOTE_COMMAND = {
     name: "createvote",
-    description: "Vote for a candidate",
+    description: "Create vote session",
     type: 1, // CHAT_INPUT
     options: optionsArray,
 };
 
-console.log(VOTE_COMMAND);
+const VOTE_COMMAND = {
+    name: "vote",
+    description: "Vote for a candidate",
+    type: 1,
+};
+
+const TALLY_COMMAND = {
+    name: "tally",
+    description: "Tally for a vote session",
+    type: 1,
+};
+
 
 const SENDER_COMMAND = {
-    name: 'sender',
-    description: 'Get the receipt of a transaction',
+    name: "sender",
+    description: "Get the receipt of a transaction",
     type: 1,
-  };
-  
-  const RECEIVER_COMMAND = {
-    name: 'receiver',
-    description: 'Get the receipt of a transaction',
+};
+
+const RECEIVER_COMMAND = {
+    name: "receiver",
+    description: "Get the receipt of a transaction",
     type: 1,
-  };
-
-
+};
 
 // Update command list
 const ALL_COMMANDS = [
@@ -103,7 +128,9 @@ const ALL_COMMANDS = [
     SEND_COMMAND,
     CHECK_COMMAND,
     FAUCET_COMMAND,
+    CREATE_VOTE_COMMAND,
     VOTE_COMMAND,
+    TALLY_COMMAND,
     SENDER_COMMAND,
     RECEIVER_COMMAND,
 ];

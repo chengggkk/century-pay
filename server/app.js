@@ -1,7 +1,11 @@
 import "dotenv/config";
 import express from "express";
 import mongoose from "mongoose";
-import { InteractionType, InteractionResponseType } from "discord-interactions";
+import {
+    InteractionType,
+    InteractionResponseType,
+    MessageComponentTypes,
+} from "discord-interactions";
 import {
     VerifyDiscordRequest,
     getRandomEmoji,
@@ -13,6 +17,7 @@ import userlinksRouter from "./routes/userlinks.js";
 import sendlink from "./models/sendlink.js";
 import createlink from "./models/createlink.js";
 import votelink from "./models/votelink.js";
+import tallylink from "./models/tallylink.js";
 import {
     ButtonBuilder,
     ButtonStyle,
@@ -37,8 +42,6 @@ const client = new Client({
         GatewayIntentBits.GuildIntegrations,
     ],
 });
-
-
 
 const sendLinkChangeStream = sendlink.watch([
     { $match: { operationType: "update" } },
@@ -102,7 +105,6 @@ app.get("/", (req, res) => res.send("Express on Vercel"));
 app.post("/interactions", async (req, res) => {
     const { type, data, member, user } = req.body;
     const { name, options, custom_id } = data;
-
 
     if (type === InteractionType.PING) {
         return res.send({ type: InteractionResponseType.PONG });
@@ -219,34 +221,37 @@ app.post("/interactions", async (req, res) => {
         }
 
         if (name === "createvote") {
-            console.log('Channel ID:', data.id);
+            console.log("Channel ID:", data.id);
 
             const sessionId = Math.random().toString(36).substring(2, 15);
             const timestamp = new Date();
             const channelID = data.id;
-        
+
             // 收集所有选项值并存储为数组
             const optionArray = [];
-            for (let i = 1; i <= 10; i++) { // 假设最多有 10 个选项
+            const topic = options.find((opt) => opt.name === `topic`)?.value;
+            for (let i = 1; i <= 10; i++) {
+                // 假设最多有 10 个选项
                 const option = options.find(
                     (opt) => opt.name === `option${i}`
                 )?.value;
-        
+
                 if (option !== undefined) {
                     optionArray.push(option);
                 }
             }
-        
+
             const newcreateLink = new createlink({
                 user: userId,
                 createlink: sessionId,
                 generateTIME: timestamp,
                 option: optionArray, // 将选项存储为数组
                 channelId: channelID,
+                topic: topic,
             });
 
             await newcreateLink.save();
-        
+
             // 保存投票链接到数据库
             // // 生成选项按钮数组
             // const buttons = [];
@@ -258,7 +263,7 @@ app.post("/interactions", async (req, res) => {
             //             .setStyle(ButtonStyle.Primary)
             //     );
             // }
-        
+
             // // 将按钮分配到 ActionRow 中
             // const actionRows = [];
             // const maxButtonsPerRow = 5; // 每行最多 5 个按钮
@@ -268,18 +273,20 @@ app.post("/interactions", async (req, res) => {
             //         new ActionRowBuilder().addComponents(rowButtons)
             //     );
             // }
-        
+
             // 返回响应
             const buttons = [
                 new ButtonBuilder()
                     .setLabel("Connect 🔁")
                     .setStyle(ButtonStyle.Link)
-                    .setURL(`https://century-pay-web.vercel.app/create/${sessionId}`)
+                    .setURL(
+                        `https://century-pay-web.vercel.app/create/${sessionId}`
+                    ),
             ];
-        
+
             // 将按钮分配到 ActionRow 中
             const actionRow = new ActionRowBuilder().addComponents(buttons);
-        
+
             // 返回响应
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -290,8 +297,85 @@ app.post("/interactions", async (req, res) => {
                 },
             });
         }
-        
 
+        if (name === "vote") {
+            const validVoteLists = await createlink.find({
+                topic: { $ne: null },
+                transactionHash: { $ne: null },
+                network: { $ne: null },
+                voteId: { $ne: null },
+            });
+            const options = [];
+            for (let i = 0; i < validVoteLists.length; i++) {
+                options.push({
+                    label: validVoteLists[i].topic,
+                    value: `votelist_${validVoteLists[i]._id}`,
+                    description: `created by <@${userId}>`,
+                });
+            }
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: "Choose a topic you want to vote for:",
+                    // Selects are inside of action rows
+                    components: [
+                        {
+                            type: MessageComponentTypes.ACTION_ROW,
+                            components: [
+                                {
+                                    type: MessageComponentTypes.STRING_SELECT,
+                                    // Value for your app to identify the select menu interactions
+                                    custom_id: "vote_list",
+                                    // Select options - see https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-option-structure
+                                    options: options,
+                                },
+                            ],
+                        },
+                    ],
+                    flags: 64,
+                },
+            });
+        }
+
+        if (name === "tally") {
+            const validVoteLists = await createlink.find({
+                topic: { $ne: null },
+                transactionHash: { $ne: null },
+                network: { $ne: null },
+                voteId: { $ne: null },
+                finished: { $ne: true },
+            });
+            const options = [];
+            for (let i = 0; i < validVoteLists.length; i++) {
+                options.push({
+                    label: validVoteLists[i].topic,
+                    value: `tallylist_${validVoteLists[i]._id}`,
+                    description: `created by <@${userId}>`,
+                });
+            }
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: "Choose a topic you want to finish voting:",
+                    // Selects are inside of action rows
+                    components: [
+                        {
+                            type: MessageComponentTypes.ACTION_ROW,
+                            components: [
+                                {
+                                    type: MessageComponentTypes.STRING_SELECT,
+                                    // Value for your app to identify the select menu interactions
+                                    custom_id: "tally_list",
+                                    // Select options - see https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-option-structure
+                                    options: options,
+                                },
+                            ],
+                        },
+                    ],
+                    flags: 64,
+                },
+            });
+        }
 
         if (name === "send") {
             const amount = options.find(
@@ -410,6 +494,113 @@ app.post("/interactions", async (req, res) => {
             return await sendFaucetETH(res, userId, "optimismSepolia");
         } else if (custom_id === "BaseSepolia") {
             return await sendFaucetETH(res, userId, "baseSepolia");
+        }
+        if (custom_id === "vote_list") {
+            // Get selected option from payload
+            const selectedOption = data.values[0];
+            const voteId = selectedOption.replace("votelist_", "");
+            const vote = await createlink.findById(voteId);
+            const options = [];
+            for (let i = 0; i < vote.option.length; i++) {
+                options.push({
+                    label: vote.option[i],
+                    value: `option_${i}`,
+                });
+            }
+            const userId = req.body.member.user.id;
+
+            // Send results
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `<@${userId}> selected ${selectedOption}`,
+                    components: [
+                        {
+                            type: MessageComponentTypes.ACTION_ROW,
+                            components: [
+                                {
+                                    type: MessageComponentTypes.STRING_SELECT,
+                                    // Value for your app to identify the select menu interactions
+                                    custom_id: `vote_option_${vote._id}`,
+                                    // Select options - see https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-option-structure
+                                    options: options,
+                                },
+                            ],
+                        },
+                    ],
+                    flags: 64,
+                },
+            });
+        }
+        if (custom_id.startsWith("vote_option_")) {
+            const voteId = custom_id.replace("vote_option_", "");
+            const selectedOption = data.values[0];
+            const optionId = selectedOption.replace("option_", "");
+            const vote = await createlink.findById(voteId);
+            const timestamp = new Date();
+            const sessionId = Math.random().toString(36).substring(2, 15);
+            // TODO: get voteID from vote
+            const onchainVoteId = vote.voteId;
+            const newVoteLink = new votelink({
+                user: userId,
+                votelink: sessionId,
+                generateTIME: timestamp,
+                choice: optionId,
+                voteId: onchainVoteId,
+            });
+            await newVoteLink.save();
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: "Connect wallet to vote:",
+                    components: [
+                        new ActionRowBuilder().addComponents(
+                            new ButtonBuilder()
+                                .setLabel("Vote ✅")
+                                .setStyle(ButtonStyle.Link)
+                                .setURL(
+                                    `https://century-pay-web.vercel.app/vote/${sessionId}`
+                                )
+                        ),
+                    ],
+                    flags: 64,
+                },
+            });
+        }
+        if (custom_id === "tally_list") {
+            // Get selected option from payload
+            const selectedOption = data.values[0];
+            const voteId = selectedOption.replace("tallylist_", "");
+            const vote = await createlink.findById(voteId);
+            const timestamp = new Date();
+            const onchainVoteId = vote.voteId;
+            const sessionId = Math.random().toString(36).substring(2, 15);
+            const newTallyLink = new tallylink({
+                user: userId,
+                tallylink: sessionId,
+                generateTIME: timestamp,
+                voteId: onchainVoteId,
+            });
+            await newTallyLink.save();
+
+            // Send results
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `Connecting wallet to finish voting:`,
+                    components: [
+                        new ActionRowBuilder().addComponents(
+                            new ButtonBuilder()
+                                .setLabel("Tally 💸")
+                                .setStyle(ButtonStyle.Link)
+                                .setURL(
+                                    `https://century-pay-web.vercel.app/tally/${sessionId}`
+                                )
+                        ),
+                    ],
+                    flags: 64,
+                },
+            });
         }
     }
 });

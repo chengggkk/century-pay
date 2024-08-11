@@ -15,8 +15,8 @@ const createlinkSchema = new mongoose.Schema({
         default: Date.now
     },
     option: {
-        type: [String], 
-        default: [] 
+        type: [String],
+        default: []
     },
     channelId: {
         type: String,
@@ -42,6 +42,8 @@ const createlinkSchema = new mongoose.Schema({
     }
 });
 
-const createlink = mongoose.model('createlink', createlinkSchema);
 
-export default createlink; // Ensure this line is present to export the userlink model as default
+const createlink = mongoose.models.createlink || mongoose.model('createlink', createlinkSchema);
+
+
+export default createlink; 
