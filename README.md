@@ -2,13 +2,18 @@
 
 <p align="center">
 <a href="https://discord.com/oauth2/authorize?client_id=1269633218811002880">
-<img alt="Static Badge" src="https://img.shields.io/badge/Discord_bot-Century_Pay-7289da?style=for-the-badge">
+<img alt="Static Badge" src="https://img.shields.io/badge/Add_Discord_bot-Century_Pay-7289da?style=for-the-badge">
 </a>
 </p>
 
 Century Pay is a **Discord bot** designed to simplify on-chain payments. Users can effortlessly connect their wallets and perform transactions using simple Discord commands. Whether it's sending ETH, accessing a faucet, or staking ETH for the ETHGlobal hackathon, Century Pay streamlines the process.
 
 Thanks to the integration with **AA wallets**, on-chain interactions have never been easier. Users can sign in securely with a passkey, and their gas fees will be covered by a paymaster. When interactions require sending values—such as voting or minting NFTs—the bot provides clear guidance to help users navigate smart contract interactions seamlessly!
+
+## ETHGlobal Superhack 2024
+
+-   [🔗 Project link](https://ethglobal.com/showcase/century-pay-12dy7)
+-   [💻 Live demo](https://discord.com/oauth2/authorize?client_id=1269633218811002880)
 
 ## Architecture
 
@@ -157,7 +162,9 @@ npm run dev # for dev
 npm run start # for prod
 ```
 
--   Deployment: https://century-pay.vercel.app/
+-   Deployment:
+    -   https://century-pay.vercel.app (serverless)
+    -   https://b920-3-91-66-135.ngrok-free.app (server)
 
 ```shell
 vercel # for dev
