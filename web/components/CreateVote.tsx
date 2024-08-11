@@ -15,7 +15,7 @@ import {
 } from "../config";
 import { Button } from "./ui/button";
 import { encodeFunctionData, Hex } from "viem";
-import VoteABI from "../../contracts/artifacts/contracts/VoteExample.sol/VoteExample.json";
+import VoteABI from "../abi/VoteExample.json";
 
 export const CreateVote = ({ params }: { params: { slug: string } }) => {
     const user = useUser();
