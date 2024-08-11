@@ -269,8 +269,8 @@ app.post("/interactions", async (req, res) => {
                             return {
                                 name: `Amount: ${trx.amount}`,
                                 value: name === 'sender'
-                                ? `**Receiver Address:** ${trx.to_address}\n**Time:** ${formattedTime} (Eastern Time) \n**blockscout🔎:** https://eth-sepolia.blockscout.com/tx/${trx.transactionHash}`
-                                : `**Sender Address:** ${senderAddress}\n**Time:** ${formattedTime} (Eastern Time) \n**blockscout🔎:** https://eth-sepolia.blockscout.com/tx/${trx.transactionHash}`,
+                                ? `**Receiver Address:** ${trx.to_address}\n**Time:** ${formattedTime} (Eastern Time)\n[blockscout🔗](https://eth-sepolia.blockscout.com/tx/${trx.transactionHash})`
+                                : `**Sender Address:** ${senderAddress}\n**Time:** ${formattedTime} (Eastern Time)\n[blockscout🔗](https://eth-sepolia.blockscout.com/tx/${trx.transactionHash})`,
                                 inline: false
                             };
                         }))
