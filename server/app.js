@@ -106,13 +106,13 @@ app.get("/", (req, res) => res.send("Express on Vercel"));
 
 app.post("/interactions", async (req, res) => {
     const { type, data, member, user } = req.body;
-    const { name, options, custom_id } = data;
 
     if (type === InteractionType.PING) {
         return res.send({ type: InteractionResponseType.PONG });
     }
 
     if (type === InteractionType.APPLICATION_COMMAND) {
+        const { name, options, custom_id } = data;
         const userId = member?.user?.id || user?.id;
 
         if (name === "test") {
@@ -698,6 +698,7 @@ app.post("/interactions", async (req, res) => {
         }
     }
     if (type === InteractionType.MESSAGE_COMPONENT) {
+        const { name, options, custom_id } = data;
         // custom_id set in payload when sending message component
         const userId = member?.user?.id || user?.id;
 
