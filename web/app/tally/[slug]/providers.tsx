@@ -5,7 +5,7 @@ import {
     AlchemyAccountsProviderProps,
 } from "@alchemy/aa-alchemy/react";
 import { PropsWithChildren } from "react";
-import { config, queryClient } from "../../config";
+import { config, queryClient } from "../../../config";
 import { ThemeProvider } from "next-themes";
 
 // [!region providers]

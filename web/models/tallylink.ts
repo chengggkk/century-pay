@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const tallylinkSchema = new mongoose.Schema({
     user: {
@@ -16,7 +16,7 @@ const tallylinkSchema = new mongoose.Schema({
     },
     voteId: {
         type: String,
-        required: false,
+        required: false
     },
     transactionHash: {
         type: String,
@@ -26,6 +26,8 @@ const tallylinkSchema = new mongoose.Schema({
     },
 });
 
-const tallylink = mongoose.model("tallylink", tallylinkSchema);
 
-export default tallylink; // Ensure this line is present to export the userlink model as default
+const tallylink = mongoose.models.tallylink || mongoose.model('tallylink', tallylinkSchema);
+
+
+export default tallylink; 
