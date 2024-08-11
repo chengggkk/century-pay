@@ -108,6 +108,11 @@ const TALLY_COMMAND = {
     type: 1,
 };
 
+const RESULT_COMMAND = {
+    name: "result",
+    description: "Result of a vote session",
+    type: 1,
+};
 
 const SENDER_COMMAND = {
     name: "sender",
@@ -131,6 +136,7 @@ const ALL_COMMANDS = [
     CREATE_VOTE_COMMAND,
     VOTE_COMMAND,
     TALLY_COMMAND,
+    RESULT_COMMAND,
     SENDER_COMMAND,
     RECEIVER_COMMAND,
 ];
