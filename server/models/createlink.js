@@ -22,9 +22,19 @@ const createlinkSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    transactionHash: {
+        type: String,
+    },
+    network: {
+        type: String,
+    },
     topic: {
         type: String,
         required: true
+    },
+    voteId: {
+        type: String,
+        required: false
     }
 });
 

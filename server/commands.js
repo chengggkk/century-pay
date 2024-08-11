@@ -91,12 +91,16 @@ const optionsArray = generateOptions(numOptions);
 // 定义 VOTE_COMMAND 对象
 const CREATE_VOTE_COMMAND = {
     name: "createvote",
-    description: "Vote for a candidate",
+    description: "Create vote session",
     type: 1, // CHAT_INPUT
     options: optionsArray,
 };
 
-console.log(CREATE_VOTE_COMMAND);
+const VOTE_COMMAND = {
+    name: "vote",
+    description: "Vote for a candidate",
+    type: 1,
+};
 
 const SENDER_COMMAND = {
     name: "sender",
@@ -118,6 +122,7 @@ const ALL_COMMANDS = [
     CHECK_COMMAND,
     FAUCET_COMMAND,
     CREATE_VOTE_COMMAND,
+    VOTE_COMMAND,
     SENDER_COMMAND,
     RECEIVER_COMMAND,
 ];

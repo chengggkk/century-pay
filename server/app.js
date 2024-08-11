@@ -1,7 +1,11 @@
 import "dotenv/config";
 import express from "express";
 import mongoose from "mongoose";
-import { InteractionType, InteractionResponseType } from "discord-interactions";
+import {
+    InteractionType,
+    InteractionResponseType,
+    MessageComponentTypes,
+} from "discord-interactions";
 import {
     VerifyDiscordRequest,
     getRandomEmoji,
@@ -293,6 +297,44 @@ app.post("/interactions", async (req, res) => {
             });
         }
 
+        if (name === "vote") {
+            const validVoteLists = await createlink.find({
+                topic: { $ne: null },
+                transactionHash: { $ne: null },
+                network: { $ne: null },
+            });
+            const options = [];
+            for (let i = 0; i < validVoteLists.length; i++) {
+                options.push({
+                    label: validVoteLists[i].topic,
+                    value: `votelist_${validVoteLists[i]._id}`,
+                    description: `created by <@${userId}>`,
+                });
+            }
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: "Choose a topic you want to vote for:",
+                    // Selects are inside of action rows
+                    components: [
+                        {
+                            type: MessageComponentTypes.ACTION_ROW,
+                            components: [
+                                {
+                                    type: MessageComponentTypes.STRING_SELECT,
+                                    // Value for your app to identify the select menu interactions
+                                    custom_id: "vote_list",
+                                    // Select options - see https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-option-structure
+                                    options: options,
+                                },
+                            ],
+                        },
+                    ],
+                    flags: 64,
+                },
+            });
+        }
+
         if (name === "send") {
             const amount = options.find(
                 (option) => option.name === "amount"
@@ -410,6 +452,78 @@ app.post("/interactions", async (req, res) => {
             return await sendFaucetETH(res, userId, "optimismSepolia");
         } else if (custom_id === "BaseSepolia") {
             return await sendFaucetETH(res, userId, "baseSepolia");
+        }
+        if (custom_id === "vote_list") {
+            // Get selected option from payload
+            const selectedOption = data.values[0];
+            const voteId = selectedOption.replace("votelist_", "");
+            const vote = await createlink.findById(voteId);
+            const options = [];
+            for (let i = 0; i < vote.option.length; i++) {
+                options.push({
+                    label: vote.option[i],
+                    value: `option_${i}`,
+                });
+            }
+            const userId = req.body.member.user.id;
+
+            // Send results
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `<@${userId}> selected ${selectedOption}`,
+                    components: [
+                        {
+                            type: MessageComponentTypes.ACTION_ROW,
+                            components: [
+                                {
+                                    type: MessageComponentTypes.STRING_SELECT,
+                                    // Value for your app to identify the select menu interactions
+                                    custom_id: `vote_option_${vote._id}`,
+                                    // Select options - see https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-option-structure
+                                    options: options,
+                                },
+                            ],
+                        },
+                    ],
+                    flags: 64,
+                },
+            });
+        }
+        if (custom_id.startsWith("vote_option_")) {
+            const voteId = custom_id.replace("vote_option_", "");
+            const selectedOption = data.values[0];
+            const optionId = selectedOption.replace("option_", "");
+            const vote = await createlink.findById(voteId);
+            const timestamp = new Date();
+            const sessionId = Math.random().toString(36).substring(2, 15);
+            // TODO: get voteID from vote
+            const onchainVoteId = 0;
+            const newVoteLink = new votelink({
+                user: userId,
+                votelink: sessionId,
+                generateTIME: timestamp,
+                choice: optionId,
+                voteId: onchainVoteId,
+            });
+            await newVoteLink.save();
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: "Connect wallet to vote:",
+                    components: [
+                        new ActionRowBuilder().addComponents(
+                            new ButtonBuilder()
+                                .setLabel("Vote ✅")
+                                .setStyle(ButtonStyle.Link)
+                                .setURL(
+                                    `https://century-pay-web.vercel.app/vote/${sessionId}`
+                                )
+                        ),
+                    ],
+                    flags: 64,
+                },
+            });
         }
     }
 });

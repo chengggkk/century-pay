@@ -28,6 +28,14 @@ const createlinkSchema = new mongoose.Schema({
     network: {
         type: String,
     },
+    topic: {
+        type: String,
+        required: true
+    },
+    voteId: {
+        type: String,
+        required: false
+    }
 });
 
 

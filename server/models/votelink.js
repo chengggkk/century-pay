@@ -17,6 +17,10 @@ const votelinkSchema = new mongoose.Schema({
     choice: {
         type: String,
         required: true
+    },
+    voteId: {
+        type: String,
+        required: true
     }
 });
 
