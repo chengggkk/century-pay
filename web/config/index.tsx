@@ -6,6 +6,7 @@ import { cookieStorage, createStorage } from "wagmi";
 import {
     base,
     baseSepolia,
+    Chain,
     mainnet,
     optimism,
     optimismSepolia,
@@ -25,6 +26,36 @@ const metadata = {
     icons: ["https://i.imgur.com/QYfsdUE.png"],
 };
 
+export const metal2 = {
+    id: 1740,
+    name: "Metal L2",
+    nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+    rpcUrls: {
+        default: { http: ["https://rpc.metall2.com"] },
+    },
+    blockExplorers: {
+        default: {
+            name: "Blockscout",
+            url: "https://explorer.metall2.com",
+        },
+    },
+} as const satisfies Chain;
+
+export const metal2testnet = {
+    id: 1740,
+    name: "Metal L2 Testnet",
+    nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+    rpcUrls: {
+        default: { http: ["https://testnet.rpc.metall2.com"] },
+    },
+    blockExplorers: {
+        default: {
+            name: "Blockscout",
+            url: "https://testnet.explorer.metall2.com",
+        },
+    },
+} as const satisfies Chain;
+
 // Create wagmiConfig
 const chains = [
     mainnet,
@@ -33,6 +64,8 @@ const chains = [
     baseSepolia,
     optimism,
     optimismSepolia,
+    metal2,
+    metal2testnet,
 ] as const;
 export const config = defaultWagmiConfig({
     chains,

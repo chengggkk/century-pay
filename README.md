@@ -90,8 +90,18 @@ Thanks to the integration with **AA wallets**, on-chain interactions have never 
 
 -   Description: Users can view the result of every finished vote session.
 -   Selectors
+
     -   `topic` - The topic of the vote
+
     ![result](./assets/cp-result.gif)
+
+## Authentication
+
+The wallet authentication should be connected through an embedd frontend framework. Here is an example of using **Alchemy Embedded Account** through **Passkey** authentication.
+
+<p align="center">
+<img width="200" src="./assets/cp-auth.gif">
+</p>
 
 ## Installation
 
