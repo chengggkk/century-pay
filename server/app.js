@@ -143,6 +143,7 @@ app.post("/interactions", async (req, res) => {
             });
         }
 
+
         if (name === "check") {
             let userLink = await userlink
                 .findOne({ user: userId })
@@ -173,6 +174,133 @@ app.post("/interactions", async (req, res) => {
                 });
             }
         }
+        if (type === InteractionType.APPLICATION_COMMAND || type === InteractionType.MESSAGE_COMPONENT) {
+            const { name, options, custom_id } = data;
+            const userId = member?.user?.id || user?.id;
+
+            let page = 1;
+
+            if (type === InteractionType.MESSAGE_COMPONENT) {
+                // Extract information from the custom ID
+                const [action, commandName, actionType, pageNumber] = custom_id.split('_');
+                name = commandName;
+                page = parseInt(pageNumber, 10);
+                page = actionType === 'next' ? page + 1 : page - 1;
+            } else if (options && options.length) {
+                page = parseInt(options[0].value, 10) || 1;
+            }
+
+            if (name === 'sender' || name === 'receiver') {
+                // Find the most recent valid address
+                let userLink = await userlink.findOne({ user: userId }).sort({ generateTIME: -1 });
+
+                while (userLink && userLink.address === '0x') {
+                    userLink = await userlink.findOne({
+                        user: userId,
+                        generateTIME: { $lt: userLink.generateTIME }
+                    }).sort({ generateTIME: -1 });
+                }
+
+                if (!userLink || userLink.address === '0x') {
+                    return res.send({
+                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                        data: { content: 'No address connected.', flags: 64 }
+                    });
+                }
+
+                // Pagination setup
+                const recordsPerPage = 10;
+                const skip = (page - 1) * recordsPerPage;
+
+                // Query based on the command type
+                const query = name === 'sender'
+                    ? { user: userId }
+                    : { to_address: userLink.address };
+
+                // Fetch transactions (including one extra to check for next page)
+                const transactions = await sendlink.find(query)
+                    .sort({ generateTIME: -1 })
+                    .skip(skip)
+                    .limit(recordsPerPage + 1); // Fetch one extra record to check if the next page exists
+
+                if (transactions.length === 0) {
+                    return res.send({
+                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                        data: { content: 'No transactions found.', flags: 64 }
+                    });
+                }
+
+                // Format the transactions into an embed
+                const embed = new EmbedBuilder()
+                .setTitle(`Transactions (Page ${page})`)
+                .setColor(0x00AE86)
+                .addFields(
+                    await Promise.all(transactions.slice(0, recordsPerPage).map(async (trx) => {
+
+                        console.log("Transaction user ID:", trx.user);
+
+                        // 查找用户的最近有效地址
+                        let userLink = await userlink
+                            .findOne({ user: trx.user }) // 根据 `trx.user` 查找 userLink
+                            .sort({ generateTIME: -1 });
+            
+                        // 如果第一个查到的记录地址无效，继续寻找上一个有效的地址
+                        while (userLink && userLink.address === "0x") {
+                            userLink = await userlink
+                                .findOne({
+                                    user: trx.user,
+                                    generateTIME: { $lt: userLink.generateTIME },
+                                })
+                                .sort({ generateTIME: -1 });
+                        }
+            
+                        // 如果找不到有效地址，返回一个默认值或错误提示
+                        const senderAddress = userLink.address;
+            
+                        return {
+                            name: `Amount: ${trx.amount}`,
+                            value: name === 'sender'
+                                ? `**Receiver Address:** ${trx.to_address}\n**Time:** ${trx.generateTIME.toISOString().replace(/T/, ' ').replace(/\..+/, '')}`
+                                : `**Sender Address:** ${senderAddress}\n**Time:** ${trx.generateTIME.toISOString().replace(/T/, ' ').replace(/\..+/, '')}`,
+                            inline: false
+                        };
+                    }))
+                );
+            
+                // Prepare response with pagination buttons
+                const response = {
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        embeds: [embed],
+                        components: [
+                            new ActionRowBuilder()
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setCustomId(`paginate_${name}_prev_${page}`)
+                                        .setLabel('Previous Page')
+                                        .setStyle(ButtonStyle.Primary)
+                                        .setDisabled(page === 1)
+                                )
+                        ],
+                        flags: 64
+                    }
+                };
+
+                // If more records are available, show the next page button
+                if (transactions.length > recordsPerPage) {
+                    response.data.components[0].addComponents(
+                        new ButtonBuilder()
+                            .setCustomId(`paginate_${name}_next_${page}`)
+                            .setLabel('Next Page')
+                            .setStyle(ButtonStyle.Primary)
+                    );
+                }
+
+                return res.send(response);
+            }
+        }
+
+
 
         if (name === "faucet") {
             return res.send({
@@ -241,7 +369,7 @@ app.post("/interactions", async (req, res) => {
         }
 
         if (name === "vote") {
-            
+
         }
 
         if (name === "createvote") {
