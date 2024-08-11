@@ -86,6 +86,13 @@ Thanks to the integration with **AA wallets**, on-chain interactions have never 
 -   Description: Users can close the vote session with the tally command. It also redirects the user to connect an AA account to confirm the transaction.
     ![tally](./assets/cp-tally.gif)
 
+### `/result`
+
+-   Description: Users can view the result of every finished vote session.
+-   Selectors
+    -   `topic` - The topic of the vote
+    ![result](./assets/cp-result.gif)
+
 ## Installation
 
 ### [📄 contracts](./contracts):
