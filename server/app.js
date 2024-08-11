@@ -17,6 +17,7 @@ import userlinksRouter from "./routes/userlinks.js";
 import sendlink from "./models/sendlink.js";
 import createlink from "./models/createlink.js";
 import votelink from "./models/votelink.js";
+import tallylink from "./models/tallylink.js";
 import {
     ButtonBuilder,
     ButtonStyle,
@@ -336,6 +337,46 @@ app.post("/interactions", async (req, res) => {
             });
         }
 
+        if (name === "tally") {
+            const validVoteLists = await createlink.find({
+                topic: { $ne: null },
+                transactionHash: { $ne: null },
+                network: { $ne: null },
+                voteId: { $ne: null },
+                finished: { $ne: true },
+            });
+            const options = [];
+            for (let i = 0; i < validVoteLists.length; i++) {
+                options.push({
+                    label: validVoteLists[i].topic,
+                    value: `tallylist_${validVoteLists[i]._id}`,
+                    description: `created by <@${userId}>`,
+                });
+            }
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: "Choose a topic you want to finish voting:",
+                    // Selects are inside of action rows
+                    components: [
+                        {
+                            type: MessageComponentTypes.ACTION_ROW,
+                            components: [
+                                {
+                                    type: MessageComponentTypes.STRING_SELECT,
+                                    // Value for your app to identify the select menu interactions
+                                    custom_id: "tally_list",
+                                    // Select options - see https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-option-structure
+                                    options: options,
+                                },
+                            ],
+                        },
+                    ],
+                    flags: 64,
+                },
+            });
+        }
+
         if (name === "send") {
             const amount = options.find(
                 (option) => option.name === "amount"
@@ -519,6 +560,41 @@ app.post("/interactions", async (req, res) => {
                                 .setStyle(ButtonStyle.Link)
                                 .setURL(
                                     `https://century-pay-web.vercel.app/vote/${sessionId}`
+                                )
+                        ),
+                    ],
+                    flags: 64,
+                },
+            });
+        }
+        if (custom_id === "tally_list") {
+            // Get selected option from payload
+            const selectedOption = data.values[0];
+            const voteId = selectedOption.replace("tallylist_", "");
+            const vote = await createlink.findById(voteId);
+            const timestamp = new Date();
+            const onchainVoteId = vote.voteId;
+            const sessionId = Math.random().toString(36).substring(2, 15);
+            const newTallyLink = new tallylink({
+                user: userId,
+                tallylink: sessionId,
+                generateTIME: timestamp,
+                voteId: onchainVoteId,
+            });
+            await newTallyLink.save();
+
+            // Send results
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `Connecting wallet to finish voting:`,
+                    components: [
+                        new ActionRowBuilder().addComponents(
+                            new ButtonBuilder()
+                                .setLabel("Tally 💸")
+                                .setStyle(ButtonStyle.Link)
+                                .setURL(
+                                    `https://century-pay-web.vercel.app/tally/${sessionId}`
                                 )
                         ),
                     ],

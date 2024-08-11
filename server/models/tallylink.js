@@ -1,22 +1,25 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const tallylinkSchema = new mongoose.Schema({
     user: {
         type: String,
-        required: true
+        required: true,
     },
     tallylink: {
         type: String,
-        required: true
+        required: true,
     },
     generateTIME: {
         type: Date,
         required: true,
-        default: Date.now
+        default: Date.now,
     },
-
+    voteId: {
+        type: String,
+        required: false
+    },
 });
 
-const votelink = mongoose.model('votelink', votelinkSchema);
+const tallylink = mongoose.model("tallylink", tallylinkSchema);
 
-export default votelink; // Ensure this line is present to export the userlink model as default
+export default tallylink; // Ensure this line is present to export the userlink model as default

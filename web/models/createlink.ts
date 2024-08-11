@@ -35,6 +35,10 @@ const createlinkSchema = new mongoose.Schema({
     voteId: {
         type: String,
         required: false
+    },
+    finished: {
+        type: Boolean,
+        required: false
     }
 });
 

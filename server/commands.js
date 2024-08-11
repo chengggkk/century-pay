@@ -102,6 +102,13 @@ const VOTE_COMMAND = {
     type: 1,
 };
 
+const TALLY_COMMAND = {
+    name: "tally",
+    description: "Tally for a vote session",
+    type: 1,
+};
+
+
 const SENDER_COMMAND = {
     name: "sender",
     description: "Get the receipt of a transaction",
@@ -123,6 +130,7 @@ const ALL_COMMANDS = [
     FAUCET_COMMAND,
     CREATE_VOTE_COMMAND,
     VOTE_COMMAND,
+    TALLY_COMMAND,
     SENDER_COMMAND,
     RECEIVER_COMMAND,
 ];
