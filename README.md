@@ -30,12 +30,14 @@ Thanks to the integration with **AA wallets**, on-chain interactions have never 
 ### `/connect`
 
 -   Description: It let a user to connect to a wallet, and the bot will save the user's address in database (for the future usage).
--    ![connect](./assets/cp-connect.gif)
+
+    ![connect](./assets/cp-connect.gif)
 
 ### `/check`
 
 -   Description: It let a user to check which wallet he/she is connecting to. It outputs an Ethereum address.
--    ![check](./assets/cp-check.gif)
+
+    ![check](./assets/cp-check.gif)
 
 ### `/send`
 
@@ -54,17 +56,20 @@ Thanks to the integration with **AA wallets**, on-chain interactions have never 
 
 -   Description: It automatically sends some ETH (0.001 ETH) to the user's wallet if the user has connected to an address.
 -   Options: `Sepolia`, `OptimismSepolia`, `BaseSepolia`
--    ![faucet](./assets/cp-faucet.gif)
+
+   ![faucet](./assets/cp-faucet.gif)
 
 ### `/sender`
 
 -   Description: Get all of the result of transactions for sending money and give users a blockscout link to check the transaction.
--    ![faucet](./assets/cp-faucet.gif)
+
+    ![faucet](./assets/cp-faucet.gif)
 
 ### `/receiver`
 
 - Description: Get all the results of transactions for getting money and provide users with a Blockscout link to check the transaction.
-- ![faucet](./assets/cp-faucet.gif)
+
+ ![faucet](./assets/cp-faucet.gif)
 
 
 ### `/createVote`
