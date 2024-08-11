@@ -256,12 +256,21 @@ app.post("/interactions", async (req, res) => {
 
                             // 如果找不到有效地址，返回一个默认值或错误提示
                             const senderAddress = userLink.address;
+                            const formattedTime = new Date(trx.generateTIME).toLocaleString("en-US", {
+                                timeZone: "America/New_York", // ET timezone
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit',
+                            });
 
                             return {
                                 name: `Amount: ${trx.amount}`,
                                 value: name === 'sender'
-                                    ? `**Receiver Address:** ${trx.to_address}\n**Time:** ${trx.generateTIME.toISOString().replace(/T/, ' ').replace(/\..+/, '')} \n**blockscout🔎:** https://eth-sepolia.blockscout.com/tx/${trx.transactionHash}`
-                                    : `**Sender Address:** ${senderAddress}\n**Time:** ${trx.generateTIME.toISOString().replace(/T/, ' ').replace(/\..+/, '')} \n**blockscout🔎:** https://eth-sepolia.blockscout.com/tx/${trx.transactionHash}`,
+                                ? `**Receiver Address:** ${trx.to_address}\n**Time:** ${formattedTime} (Eastern Time) \n**blockscout🔎:** https://eth-sepolia.blockscout.com/tx/${trx.transactionHash}`
+                                : `**Sender Address:** ${senderAddress}\n**Time:** ${formattedTime} (Eastern Time) \n**blockscout🔎:** https://eth-sepolia.blockscout.com/tx/${trx.transactionHash}`,
                                 inline: false
                             };
                         }))
