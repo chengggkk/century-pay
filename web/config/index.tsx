@@ -26,8 +26,8 @@ const metadata = {
     icons: ["https://i.imgur.com/QYfsdUE.png"],
 };
 
-export const metal2 = {
-    id: 1740,
+export const metalL2 = {
+    id: 1750,
     name: "Metal L2",
     nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
     rpcUrls: {
@@ -41,7 +41,7 @@ export const metal2 = {
     },
 } as const satisfies Chain;
 
-export const metal2testnet = {
+export const metalL2testnet = {
     id: 1740,
     name: "Metal L2 Testnet",
     nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
@@ -56,6 +56,36 @@ export const metal2testnet = {
     },
 } as const satisfies Chain;
 
+export const mode = {
+    id: 34443,
+    name: "Mode",
+    nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+    rpcUrls: {
+        default: { http: ["https://mainnet.mode.network"] },
+    },
+    blockExplorers: {
+        default: {
+            name: "Blockscout",
+            url: "https://explorer.mode.network",
+        },
+    },
+} as const satisfies Chain;
+
+export const modeSepolia = {
+    id: 919,
+    name: "Mode Testnet",
+    nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+    rpcUrls: {
+        default: { http: ["https://sepolia.mode.network"] },
+    },
+    blockExplorers: {
+        default: {
+            name: "Blockscout",
+            url: "https://sepolia.explorer.mode.network",
+        },
+    },
+} as const satisfies Chain;
+
 // Create wagmiConfig
 const chains = [
     mainnet,
@@ -64,8 +94,10 @@ const chains = [
     baseSepolia,
     optimism,
     optimismSepolia,
-    metal2,
-    metal2testnet,
+    metalL2,
+    metalL2testnet,
+    mode,
+    modeSepolia,
 ] as const;
 export const config = defaultWagmiConfig({
     chains,
