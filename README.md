@@ -210,3 +210,8 @@ vercel --prod # for prod
 -   **Purchase and exchange tokens**
     -   We can connect like Apple pay to let users buy tokens within Discord
     -   And users can exchange assets within Discord
+
+    -   **Automated Prize Distribution for Voting Events**
+        - The bot will have the capability to automatically distribute prizes to the winners of voting events. This functionality combines the voting and payment processes, allowing for seamless prize distribution.
+        
+        For example, during a hackathon, judges can vote for their favorite project, and the winner will receive the prize automatically after the event concludes.
