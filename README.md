@@ -214,4 +214,4 @@ vercel --prod # for prod
 -   **Automated Prize Distribution for Voting Events**
     - The bot will have the capability to automatically distribute prizes to the winners of voting events. This functionality combines the voting and payment processes, allowing for seamless prize distribution.
         
-    For example, during a hackathon, judges can vote for their favorite project, and the winner will receive the prize automatically after the event concludes.
+        For example, during a hackathon, judges can vote for their favorite project, and the winner will receive the prize automatically after the event concludes.
