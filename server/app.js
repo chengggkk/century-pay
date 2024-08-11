@@ -439,6 +439,7 @@ app.post("/interactions", async (req, res) => {
                 transactionHash: { $ne: null },
                 network: { $ne: null },
                 voteId: { $ne: null },
+                finished: { $ne: true },
             });
             const options = [];
             for (let i = 0; i < validVoteLists.length; i++) {
