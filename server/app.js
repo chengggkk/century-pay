@@ -214,8 +214,8 @@ app.post("/interactions", async (req, res) => {
 
                 // Query based on the command type
                 const query = name === 'sender'
-                    ? { user: userId }
-                    : { to_address: userLink.address };
+                    ? { user: userId, transactionHash: { $ne: null } }
+                    : { to_address: userLink.address, transactionHash: { $ne: null } };
 
                 // Fetch transactions (including one extra to check for next page)
                 const transactions = await sendlink.find(query)
@@ -232,41 +232,41 @@ app.post("/interactions", async (req, res) => {
 
                 // Format the transactions into an embed
                 const embed = new EmbedBuilder()
-                .setTitle(`Transactions (Page ${page})`)
-                .setColor(0x00AE86)
-                .addFields(
-                    await Promise.all(transactions.slice(0, recordsPerPage).map(async (trx) => {
+                    .setTitle(`Transactions (Page ${page})`)
+                    .setColor(0x00AE86)
+                    .addFields(
+                        await Promise.all(transactions.slice(0, recordsPerPage).map(async (trx) => {
 
-                        console.log("Transaction user ID:", trx.user);
+                            console.log("Transaction user ID:", trx.user);
 
-                        // 查找用户的最近有效地址
-                        let userLink = await userlink
-                            .findOne({ user: trx.user }) // 根据 `trx.user` 查找 userLink
-                            .sort({ generateTIME: -1 });
-            
-                        // 如果第一个查到的记录地址无效，继续寻找上一个有效的地址
-                        while (userLink && userLink.address === "0x") {
-                            userLink = await userlink
-                                .findOne({
-                                    user: trx.user,
-                                    generateTIME: { $lt: userLink.generateTIME },
-                                })
+                            // 查找用户的最近有效地址
+                            let userLink = await userlink
+                                .findOne({ user: trx.user }) // 根据 `trx.user` 查找 userLink
                                 .sort({ generateTIME: -1 });
-                        }
-            
-                        // 如果找不到有效地址，返回一个默认值或错误提示
-                        const senderAddress = userLink.address;
-            
-                        return {
-                            name: `Amount: ${trx.amount}`,
-                            value: name === 'sender'
-                                ? `**Receiver Address:** ${trx.to_address}\n**Time:** ${trx.generateTIME.toISOString().replace(/T/, ' ').replace(/\..+/, '')}`
-                                : `**Sender Address:** ${senderAddress}\n**Time:** ${trx.generateTIME.toISOString().replace(/T/, ' ').replace(/\..+/, '')}`,
-                            inline: false
-                        };
-                    }))
-                );
-            
+
+                            // 如果第一个查到的记录地址无效，继续寻找上一个有效的地址
+                            while (userLink && userLink.address === "0x") {
+                                userLink = await userlink
+                                    .findOne({
+                                        user: trx.user,
+                                        generateTIME: { $lt: userLink.generateTIME },
+                                    })
+                                    .sort({ generateTIME: -1 });
+                            }
+
+                            // 如果找不到有效地址，返回一个默认值或错误提示
+                            const senderAddress = userLink.address;
+
+                            return {
+                                name: `Amount: ${trx.amount}`,
+                                value: name === 'sender'
+                                    ? `**Receiver Address:** ${trx.to_address}\n**Time:** ${trx.generateTIME.toISOString().replace(/T/, ' ').replace(/\..+/, '')} \n**blockscout🔎:** https://eth-sepolia.blockscout.com/tx/${trx.transactionHash}`
+                                    : `**Sender Address:** ${senderAddress}\n**Time:** ${trx.generateTIME.toISOString().replace(/T/, ' ').replace(/\..+/, '')} \n**blockscout🔎:** https://eth-sepolia.blockscout.com/tx/${trx.transactionHash}`,
+                                inline: false
+                            };
+                        }))
+                    );
+
                 // Prepare response with pagination buttons
                 const response = {
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
