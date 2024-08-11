@@ -505,6 +505,7 @@ app.post("/interactions", async (req, res) => {
 
         if (name === "tally") {
             const validVoteLists = await createlink.find({
+                user: userId,
                 topic: { $ne: null },
                 transactionHash: { $ne: null },
                 network: { $ne: null },
@@ -512,6 +513,15 @@ app.post("/interactions", async (req, res) => {
                 finished: { $ne: true },
             });
             const options = [];
+            if (validVoteLists.length === 0) {
+                return res.send({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        content: "No votes can be tallied by you.",
+                        flags: 64,
+                    },
+                });
+            }
             for (let i = 0; i < validVoteLists.length; i++) {
                 options.push({
                     label: validVoteLists[i].topic,
